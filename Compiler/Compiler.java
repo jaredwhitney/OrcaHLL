@@ -4,7 +4,7 @@ import java.util.Map.Entry;
 public class Compiler
 {
 	static Stack<Structure> level = new Stack<Structure>();
-	static String programName, programTitle, inp, uinp;
+	static String arg0, programTitle, inp, uinp;
 	static String programCode = "[bits 32]\n\n";
 	static Map<String, OClass> classes = new HashMap<String, OClass>();
 	static boolean finishedMacros = false;
@@ -13,10 +13,13 @@ public class Compiler
 	static Scanner in;
 	static OClass currentClass;
 	static PrintWriter out;
+	static Map<String, OVar> libvars = new HashMap<String, OVar>();
 	
 	public static void main(String[] args) throws Exception
 	{
-		f = new File(args[0]);
+		loadLib(".");
+		arg0 = args[0];
+		f = new File(arg0);
 		File outFile = new File(args[0].replaceAll(".orca", ".asm"));
 		out = new PrintWriter(outFile);
 		in = new Scanner(f);
@@ -58,7 +61,7 @@ public class Compiler
 		{
 			String firstRealWord = getFirstRealWord(words);
 			if (firstRealWord.equals("func"))
-				makeFunction(words);
+				makeFunction(words, inp);
 			else if (firstRealWord.equals("program"))
 				makeProgram();
 			else if (firstRealWord.equals("classdef"))
@@ -94,6 +97,7 @@ public class Compiler
 				
 				if (contains(mods, "linked"))
 				{
+					System.out.println("Var dec is linked.");
 					OVar v;
 					if (contains(Types.primitive, type))
 						v = new OPrimitive(type, mods, claz.classSize, className + ".$offs." + name);
@@ -170,18 +174,23 @@ public class Compiler
 	}
 	public static void closeLastLevel()
 	{
-		System.out.println("Closing on " + inp);
+		System.out.println("[CloseLevel] Closing on " + inp);
 		Structure s = level.pop();
 		s.close();
 	}
 	public static void handleDirective()
 	{}
-	public static void makeFunction(String[] words)
+	public static void makeFunction(String[] words, String inp)
 	{
-		System.out.println("make function: " + getSecondRealWord(words));
+		System.out.println("[MakeFunc] make function: " + getSecondRealWord(words));
 		String[] mods = getModifiers(words);
 		boolean linked = contains(mods, "linked");
-		Function func = new Function(currentClass, getSecondRealWord(words), mods, linked);
+		String returnType = smartSplit(inp.split("\\Q(\\E")[1], ':')[0].trim();
+		for (String s : smartSplit(inp, ':'))
+			System.out.println("[MakeFunc] Found dec part: '" + s + "'");
+		String[] params = smartSplit(smartSplit(inp, ':')[1], ',');
+		trimArray(params);
+		Function func = new Function(currentClass, getSecondRealWord(words), mods, returnType, params, linked);
 		level.add(func);
 		System.out.println("[MakeFunc] On level_" + level.size());
 		System.out.println("[MakeFunc] Added '" + level.peek().getClass().getName() + "'");
@@ -239,8 +248,9 @@ public class Compiler
 		}
 		return false;
 	}
-	public static void createVar(String[] words)
+	public static void createVar(String[] words, String inp)
 	{
+		System.out.println("[MakeVar] Handed '" + inp + "'");
 		System.out.println("Create var '" + getSecondRealWord(words) + "'");
 		String name = getSecondRealWord(words);
 		String type = getFirstRealWord(words);
@@ -256,7 +266,7 @@ public class Compiler
 					else
 						v = new OVar(type, mods, asmName);
 					level.peek().vars.put(name, v);
-					System.out.println("'" + level.peek().asmName + "' now knows var '" + name + "'");
+					System.out.println("'" + level.peek().asmName + "' now knows " + (contains(mods, "linked")?"linked":"") + "var '" + name + "'");
 	}
 	public static String[] getModifiers(String[] words)
 	{
@@ -305,11 +315,11 @@ public class Compiler
 	public static void parse(String inp)
 	{
 		inp = inp.trim();
-		String[] words = inp.split(" ");
+		String[] words = smartSplit(inp, ' ');
 		trimArray(words);
 		String firstWord = getFirstRealWord(words);
 		if (contains(Types.defined, firstWord) || contains(Types.primitive, firstWord))
-			createVar(words);
+			createVar(words, inp);
 		if (contains(words, "="))
 		{
 			String rest = "";
@@ -375,19 +385,39 @@ public class Compiler
 	}
 	public static OVar getVar(String commonName)	// should also check linked OVars...
 	{
+		System.out.println("[GetVar] Handed '" + commonName + "'");
 		Stack<Structure> levelStor = new Stack<Structure>();
 		OVar v = null;
 		while (!level.isEmpty())
 		{
 			Structure struct = level.pop();
 			levelStor.push(struct);
-			System.out.println("Look in " + struct.asmName + " (" + struct.getClass().getName() + ")");
+			System.out.println("[GetVar]\tLook in " + struct.asmName + " (" + struct.getClass().getName() + ")");
 			v = struct.vars.get(commonName);
 			if (v != null)
 				break;
 		}
 		while (!levelStor.isEmpty())
 			level.push(levelStor.pop());
+		if (v==null)	// check libraries
+			v = libvars.get(commonName);
+		if (v==null && contains(commonName, "."))	// check linked ovars
+		{
+			String[] splits = commonName.split("\\Q.\\E");
+			String stor = "";
+			for (int i = 0; i < splits.length-1; i++)
+				stor += splits[i];
+			OVar var = getVar(stor);
+			OClass claz = classes.get(var.type);
+			for (Entry e : claz.linkedOVars.entrySet())
+			{
+				if (((String)e.getKey()).equals(splits[splits.length-1]))
+				{
+					System.out.println("[GetVar] ITS A LINKED VAR :O");
+					return (OVar)e.getValue();
+				}
+			}
+		}
 		return v;
 	}
 	public static void parseArgs(String inp)
@@ -440,7 +470,7 @@ public class Compiler
 	static String[] smartSplit(String s, char match)
 	{
 		boolean inQuotes = false;
-		int lastSplit = 0;
+		int lastSplit = -1;
 		ArrayList<String> found = new ArrayList<String>();
 		for (int i = 0; i < s.length(); i++)
 		{
@@ -449,19 +479,50 @@ public class Compiler
 				inQuotes = !inQuotes;
 			if (!inQuotes && c==match)
 			{
-				found.add(s.substring(lastSplit, i));
+				found.add(s.substring(lastSplit+1, i+1));
 				lastSplit = i;
 			}
 		}
-		if (found.size()==0)
-			found.add(s);
+		if (lastSplit != s.length())
+			found.add(s.substring(lastSplit+1, s.length()));
 		String[] ret = new String[found.size()];
 		for (int i = 0; i < ret.length; i++)
 		{
 			ret[i] = found.get(i);
-			System.out.println("[Split]\t" + ret[i]);
+			//System.out.println("[Split]\t" + ret[i]);
 		}
 		return ret;	
+	}
+	static void loadLib(String path)
+	{
+		File dir = new File(path);
+		for (File sub : dir.listFiles())
+			if (contains(sub.getName(), ".varlist"))
+				try
+				{
+					loadSingleLib(sub);
+				}
+				catch (Exception e)
+				{
+					System.out.println("[Library] Failed to load lib '" + sub.getName().replaceAll(".varlist", "") + "'");
+					e.printStackTrace();
+				}
+	}
+	static void loadSingleLib(File f) throws Exception
+	{
+		ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
+		String className = f.getName().replaceAll(".varlist", "");
+		System.out.println("[Library] Load lib: '" + className + "'");
+		Map<String, Object> vars = (HashMap<String, Object>)in.readObject();
+		Map<String, Object> linkedVars = (HashMap<String, Object>)in.readObject();
+		for (Entry o : vars.entrySet())
+		{
+			if (o.getValue() instanceof SerializableOPrimitive)
+				libvars.put(className + "." + o.getKey(), new OPrimitive((SerializableOPrimitive)o.getValue()));
+			else
+				libvars.put(className + "." + o.getKey(), (OVar)o.getValue());
+		}
+		// do something with the linked ovars here...
 	}
 }
 class Types
@@ -472,13 +533,13 @@ class Types
 	static String[] modifier = {"linked", "capped", "final", "invis"};
 	static String[] block = {"if", "for", "while"};
 }
-class OVar
+class OVar implements Serializable
 {
 	String type;
 	String asmName;
 	String[] modifiers;
-	int refSize = 4;
-	int linkedOffset = -1;
+	Integer refSize = 4;
+	Integer linkedOffset = -1;
 	public OVar(String type, String[] modifiers, String asmName)
 	{
 		this.type = type;
@@ -498,6 +559,7 @@ class OVar
 			return "cx";
 		return "ecx";
 	}
+	protected OVar(){}
 }
 class OPrimitive extends OVar
 {
@@ -516,6 +578,27 @@ class OPrimitive extends OVar
 	{
 		this(ltype, modifiers, asmName);
 		this.linkedOffset = linkedOffset;
+	}
+	public OPrimitive(SerializableOPrimitive p)
+	{
+		this(p.type, p.modifiers, p.asmName);
+		linkedOffset = p.linkedOffset;
+	}
+}
+class SerializableOPrimitive implements Serializable
+{
+	String type;
+	String asmName;
+	String[] modifiers;
+	Integer refSize;
+	Integer linkedOffset;
+	public SerializableOPrimitive(OPrimitive p)
+	{
+		type = p.type;
+		asmName = p.asmName;
+		modifiers = p.modifiers;
+		refSize = new Integer(p.refSize);
+		linkedOffset = new Integer(p.linkedOffset);
 	}
 }
 class OClass extends Structure
@@ -540,6 +623,32 @@ class OClass extends Structure
 	public void close()
 	{
 		Compiler.programCode += name + ".$FILE_END :";
+		try{
+			ObjectOutputStream varList = new ObjectOutputStream(new FileOutputStream(name + ".varlist"));
+			Map<String, Object> vout = new HashMap<String, Object>();
+			for (Entry e : vars.entrySet())
+				if (e.getValue() instanceof OPrimitive)
+				{
+					OPrimitive stor = (OPrimitive)e.getValue();
+					String key = (String)e.getKey();
+					vout.put(key, new SerializableOPrimitive(stor));
+				}
+				else
+					vout.put((String)e.getKey(), e.getValue());
+			varList.writeObject(vout);
+			Map<String, Object> linkedvout = new HashMap<String, Object>();
+			for (Entry e : linkedOVars.entrySet())
+				if (e.getValue() instanceof OPrimitive)
+				{
+					OPrimitive stor = (OPrimitive)e.getValue();
+					String key = (String)e.getKey();
+					linkedvout.put(key, new SerializableOPrimitive(stor));
+				}
+				else
+					linkedvout.put((String)e.getKey(), e.getValue());
+			varList.writeObject(linkedvout);
+		}
+		catch(Exception e){e.printStackTrace();}
 	}
 }
 class Function extends Structure
@@ -550,13 +659,19 @@ class Function extends Structure
 	boolean linked;
 	static final String RETURN_CODE = "pop edx\npop ebx\npop eax\nret\n";
 	static int returnedOn;
-	public Function(OClass claz, String name, String[] mods, boolean linked)
+	public Function(OClass claz, String name, String[] mods, String returnType, String[] params, boolean linked)
 	{
 		this.claz = claz;
 		this.name = name;
 		this.mods = mods;
 		this.linked = linked;
 		this.asmName = Compiler.currentClass.name + "." + name;
+		if (!params[0].equals("null)"))
+			for (String p : params)
+			{
+				p = p.substring(0, p.length()-1);
+				Compiler.createVar(Compiler.smartSplit(p, ' '), p);
+			}
 	}
 	public void open()
 	{
@@ -585,6 +700,7 @@ class O_If extends Structure
 	public O_If(String inp)
 	{
 		asmName = Compiler.currentClass.name + ".$loop_if." + loopNum;
+		loopNum++;
 		// parse inp for the needed values
 	}
 	public void open()
@@ -602,6 +718,7 @@ class O_For extends Structure
 	public O_For(String inp)
 	{
 		asmName = Compiler.currentClass.name + ".$loop_for." + loopNum;
+		loopNum++;
 		// parse inp for the needed values
 	}
 	public void open()
@@ -619,6 +736,7 @@ class O_While extends Structure
 	public O_While(String inp)
 	{
 		asmName = Compiler.currentClass.name + ".$loop_while." + loopNum;
+		loopNum++;
 		// parse inp for the needed values
 	}
 	public void open()

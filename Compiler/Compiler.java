@@ -59,22 +59,12 @@ public class Compiler
 			String firstRealWord = getFirstRealWord(words);
 			if (firstRealWord.equals("func"))
 				makeFunction(words);
-			else if (firstRealWord.equals("return"))
-				handleReturn();
 			else if (firstRealWord.equals("program"))
 				makeProgram();
 			else if (firstRealWord.equals("classdef"))
-			{
 				makeClass(words);
-			}
-			else if (contains(Types.defined, firstRealWord) || contains(Types.primitive, firstRealWord))
-				createVar(words);
-			else if (isFuncCall(inp))
-			{
-				callFunction(inp);
-			}
 			else
-				System.out.println(firstRealWord + " must be a variable!");
+				parse(inp);
 		}
 		lastTabLevel = tabLevel;
 	}
@@ -193,10 +183,10 @@ public class Compiler
 		boolean linked = contains(mods, "linked");
 		Function func = new Function(currentClass, getSecondRealWord(words), mods, linked);
 		level.add(func);
+		System.out.println("[MakeFunc] On level_" + level.size());
+		System.out.println("[MakeFunc] Added '" + level.peek().getClass().getName() + "'");
 		func.open();
 	}
-	public static void handleReturn()
-	{}
 	public static void makeProgram()
 	{}
 	public static void callFunction(String inp)
@@ -227,6 +217,11 @@ public class Compiler
 			System.out.println("\t<asm> '" + code + "'");
 			programCode += code + "\t; INLINE ASSEMBLY\n";
 		}
+		else
+		{
+			parseArgs(inp);
+			// handle actual function calls here!
+		}
 	}
 	public static boolean isFuncCall(String inp)
 	{
@@ -246,7 +241,7 @@ public class Compiler
 	}
 	public static void createVar(String[] words)
 	{
-		System.out.println("Create var " + getSecondRealWord(words));
+		System.out.println("Create var '" + getSecondRealWord(words) + "'");
 		String name = getSecondRealWord(words);
 		String type = getFirstRealWord(words);
 		String[] mods = getModifiers(words);
@@ -261,6 +256,7 @@ public class Compiler
 					else
 						v = new OVar(type, mods, asmName);
 					level.peek().vars.put(name, v);
+					System.out.println("'" + level.peek().asmName + "' now knows var '" + name + "'");
 	}
 	public static String[] getModifiers(String[] words)
 	{
@@ -308,24 +304,37 @@ public class Compiler
 	}
 	public static void parse(String inp)
 	{
-		String firstWord = getFirstRealWord(inp);
-		if (contains(Types.declared, firstWord) || contains(Types.primitive, firstWord))
-			createVar();
+		inp = inp.trim();
+		String[] words = inp.split(" ");
+		trimArray(words);
+		String firstWord = getFirstRealWord(words);
+		if (contains(Types.defined, firstWord) || contains(Types.primitive, firstWord))
+			createVar(words);
 		if (contains(words, "="))
 		{
-			parse(inp.split("\\Q=\\E"));
-			Var v = getVar(firstWord);
+			String rest = "";
+			for (int i = 1; i < inp.split("\\Q=\\E").length; i++)
+				rest += inp.split("\\Q=\\E")[i];
+			parse(rest);
+			OVar v = getVar(firstWord);
+			if (contains(Types.defined, firstWord) || contains(Types.primitive, firstWord))
+			{
+				v = getVar(getSecondRealWord(words));
+				System.out.println("'" + getSecondRealWord(words) + "'");
+			}
+			System.out.println("'" + v.asmName + "' is a var. (I think...)");
 			programCode += "mov [" + v.asmName + "], " + v.getECXform() + "\n";
 		}
 		else if (firstWord.equals("return"))
 		{
+			System.out.println("[Return] Begin handling return.");
 			String rest = "";
-			String[] words = inp.split(" ");
 			for (int i = 1; i < words.length; i++)
-				rest += words + " ";
+				rest += words[i] + " ";
 			parse(rest.trim());
 			programCode += Function.RETURN_CODE;
 			Function.returnedOn = lineNumber;
+			System.out.println("[Return] End handling return.");
 		}
 		else if (contains(Types.block, firstWord))
 		{
@@ -347,15 +356,112 @@ public class Compiler
 		}
 		else if (isFuncCall(inp))
 		{
-			parseArgs(inp);
-			callFunction(firstWord);
+			callFunction(inp);
+		}
+		else if (contains(inp, "+") || contains(inp, "-") || contains(inp, "*") || contains(inp, "/"))
+		{
+			System.out.println("AAH MATH THINGS IN THIS LINE: '" + inp + "'");
+		}
+		else if (isNumeric(inp))
+		{
+			System.out.println("Numeric value found: " + Integer.parseInt(inp));
 		}
 		else
 		{
 			System.out.println("Assuming that '" + inp + "' is a variable for now.");
-			Var v = getVar(firstWord);
-			programCode += "mov " + v.getECXform + ", [" + v.asmName + "]\n";f
+			OVar v = getVar(firstWord);
+			programCode += "mov " + v.getECXform() + ", [" + v.asmName + "]\n";
 		}
+	}
+	public static OVar getVar(String commonName)	// should also check linked OVars...
+	{
+		Stack<Structure> levelStor = new Stack<Structure>();
+		OVar v = null;
+		while (!level.isEmpty())
+		{
+			Structure struct = level.pop();
+			levelStor.push(struct);
+			System.out.println("Look in " + struct.asmName + " (" + struct.getClass().getName() + ")");
+			v = struct.vars.get(commonName);
+			if (v != null)
+				break;
+		}
+		while (!levelStor.isEmpty())
+			level.push(levelStor.pop());
+		return v;
+	}
+	public static void parseArgs(String inp)
+	{
+		System.out.println("[ParseArgs] Handed String '" + inp + "'");
+		int i = 0;
+		char[] arr = inp.toCharArray();
+		for (; i < arr.length && arr[i]!='('; i++){}
+		int e = i+1;
+		boolean inQuotes = false;
+		boolean inFunc = false;
+		for (; e < arr.length && !(arr[e]==')' && !inQuotes && !inFunc); e++)
+		{
+			char c = arr[e];
+			if (c=='\"')
+				inQuotes = !inQuotes;
+			if (c=='(' && !inQuotes)
+				inFunc = true;
+			if (c==')' && !inQuotes)
+				inFunc = false;
+		}
+		String argstr = inp.substring(i+1, e);
+		System.out.println("[ParseArgs] All args should appear in: '" + argstr + "'");
+		String[] args = smartSplit(argstr, ',');
+		System.out.println("[ParseArgs] Found " + args.length + " args");
+		trimArray(args);
+		for (String arg : args)
+		{
+			System.out.println("[ParseArgs] Parsing found arg: '" + arg + "'");
+			parse(arg);
+			programCode += "push ecx\n";
+		}
+	}
+	static boolean isNumeric(String s)
+	{
+		String lookIn = s.split(" ")[0];
+		char[] acceptableNumericChars = {'-', 'x', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F'};
+		for (char c : lookIn.toCharArray())
+			if (!Character.isDigit(c))
+			{
+				boolean notGood = true;
+				for (char x : acceptableNumericChars)
+					if (x==c)
+						notGood = true;
+				if (notGood)
+					return false;
+			}
+		return true;
+	}
+	static String[] smartSplit(String s, char match)
+	{
+		boolean inQuotes = false;
+		int lastSplit = 0;
+		ArrayList<String> found = new ArrayList<String>();
+		for (int i = 0; i < s.length(); i++)
+		{
+			char c = s.charAt(i);
+			if (c=='\"')
+				inQuotes = !inQuotes;
+			if (!inQuotes && c==match)
+			{
+				found.add(s.substring(lastSplit, i));
+				lastSplit = i;
+			}
+		}
+		if (found.size()==0)
+			found.add(s);
+		String[] ret = new String[found.size()];
+		for (int i = 0; i < ret.length; i++)
+		{
+			ret[i] = found.get(i);
+			System.out.println("[Split]\t" + ret[i]);
+		}
+		return ret;	
 	}
 }
 class Types
@@ -383,6 +489,14 @@ class OVar
 	{
 		this(type, modifiers, asmName);
 		this.linkedOffset = linkedOffset;
+	}
+	public String getECXform()
+	{
+		if (refSize == 1)
+			return "cl";
+		if (refSize == 2)
+			return "cx";
+		return "ecx";
 	}
 }
 class OPrimitive extends OVar
@@ -435,6 +549,7 @@ class Function extends Structure
 	String[] mods;
 	boolean linked;
 	static final String RETURN_CODE = "pop edx\npop ebx\npop eax\nret\n";
+	static int returnedOn;
 	public Function(OClass claz, String name, String[] mods, boolean linked)
 	{
 		this.claz = claz;
@@ -450,7 +565,7 @@ class Function extends Structure
 	public void close()
 	{
 		if (returnedOn != Compiler.lastRealLine)
-			programCode += RETURN_CODE;
+			Compiler.programCode += RETURN_CODE;
 		Compiler.programCode += "\t;Vars:\n";
 		for (Entry e : vars.entrySet())
 			Compiler.declareVar((OVar)e.getValue());
@@ -463,4 +578,55 @@ abstract class Structure
 	String asmName;
 	public abstract void open();
 	public abstract void close();
+}
+class O_If extends Structure
+{
+	public static int loopNum = 0;
+	public O_If(String inp)
+	{
+		asmName = Compiler.currentClass.name + ".$loop_if." + loopNum;
+		// parse inp for the needed values
+	}
+	public void open()
+	{
+		// code goes here
+	}
+	public void close()
+	{
+		// code goes here
+	}
+}
+class O_For extends Structure
+{
+	public static int loopNum = 0;
+	public O_For(String inp)
+	{
+		asmName = Compiler.currentClass.name + ".$loop_for." + loopNum;
+		// parse inp for the needed values
+	}
+	public void open()
+	{
+		// code goes here
+	}
+	public void close()
+	{
+		// code goes here
+	}
+}
+class O_While extends Structure
+{
+	public static int loopNum = 0;
+	public O_While(String inp)
+	{
+		asmName = Compiler.currentClass.name + ".$loop_while." + loopNum;
+		// parse inp for the needed values
+	}
+	public void open()
+	{
+		// code goes here
+	}
+	public void close()
+	{
+		// code goes here
+	}
 }

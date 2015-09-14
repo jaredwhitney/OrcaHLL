@@ -506,6 +506,7 @@ public class Compiler
 			String[] substrs = commonName.split("\\Q.\\E");
 			trimArray(substrs);
 			boolean gsubs = false;
+			programCode += "push edx\n";
 			for (String s : substrs)
 			{
 				OVar vs = getVar(s);
@@ -514,6 +515,15 @@ public class Compiler
 					gsubs = true;
 					System.out.println("\tisSubVar: " + currentAdd + s);
 					currentAdd = "";
+					if (vs==null)
+						throw new RuntimeException("... well that happened: " + commonName + " is invalid (" + s + " does not exist)");
+					if (vs instanceof OPrimitive)
+						throw new RuntimeException("... well that happened: " + commonName + " is invalid (" + s + " is primitive and cannot have subvars)");
+					System.out.println("\t\tType: " + vs.type);
+					// need to grab the subvar here!
+					programCode += "mov ecx, [edx]\n";
+					programCode += "add cl, [" + vs.type + "." + vs.asmName + "]\n";
+					programCode += "mov edx, [ecx]\n";
 				}
 				else
 				{
@@ -521,6 +531,8 @@ public class Compiler
 					currentAdd += s + ".";
 				}
 			}
+			programCode += "mov ecx, edx\n";
+			programCode += "pop edx\n";
 			return null;
 		}
 		if (v==null)	// check libraries

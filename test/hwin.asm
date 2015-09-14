@@ -44,6 +44,10 @@ call text.RawToWhite
 push ecx
 call w.buffer.AppendLine
 mov ecx, 10
+push edx
+mov ecx, [edx]
+add cl, [Window.HelloWorldWindowProgram.DisplayWindow.$local.w]
+mov edx, [ecx]
 pop edx
 pop ebx
 pop eax

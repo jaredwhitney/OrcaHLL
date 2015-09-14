@@ -1,0 +1,14 @@
+classdef LoopsTest
+	
+	func _init (void : null)
+		int x = 0
+		while x < 100
+			x = x + 1
+			if x-2 == 4
+				asm("	; *** x is 6 here")
+
+	func _init2 (void : null)
+		for int y = 0 : y < 100 : y = y + 1
+			if y-2 == 4
+				asm("	; *** y is 6 here")
+	

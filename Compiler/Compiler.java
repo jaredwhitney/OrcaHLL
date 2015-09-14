@@ -5,20 +5,21 @@ public class Compiler
 {
 	static Stack<Structure> level = new Stack<Structure>();
 	static String arg0, programTitle, inp, uinp;
-	static String programCode = "[bits 32]\n\n";
+	static String programCode = "[bits 32]\n\n", closingCode = "";
 	static Map<String, OClass> classes = new HashMap<String, OClass>();
-	static boolean finishedMacros = false;
+	static boolean finishedMacros = false, syscall = false;
 	static int lineNumber, tabLevel, lastTabLevel = 0, lastRealLine;
 	static File f;
 	static Scanner in;
 	static OClass currentClass;
+	static Function currentFunction;
 	static PrintWriter out;
 	static Map<String, OVar> libvars = new HashMap<String, OVar>();
+	static String[] libdirs = {".", "../libs", "../libraries"};
 	static char[] acceptableNumericChars = {'-', 'x', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F'};
 	
 	public static void main(String[] args) throws Exception
 	{
-		loadLib(".");
 		f = new File(args[0]);
 		File outFile = new File(args[0].replaceAll(".orca", ".asm"));
 		arg0 = outFile.getName().replaceAll(".orca", "");
@@ -55,7 +56,8 @@ public class Compiler
 		trimArray(words);
 		
 		if (tabLevel < lastTabLevel)
-			closeLastLevel();
+			for (int i = tabLevel; i < lastTabLevel; i++)
+				closeLastLevel();
 		if (words[0].charAt(0)=='#')
 			handleDirective();
 		else
@@ -67,6 +69,8 @@ public class Compiler
 				makeProgram();
 			else if (firstRealWord.equals("classdef"))
 				makeClass(words);
+			else if (firstRealWord.equals("import"))
+				importLib(getSecondRealWord(words));
 			else
 				parse(inp);
 		}
@@ -251,6 +255,22 @@ public class Compiler
 		}
 		return false;
 	}
+	public static void callSystemFunction(String inp)
+	{
+		int i = 0;
+		for (char c : inp.toCharArray())
+		{
+			if (c=='(')
+				break;
+			i++;
+		}
+		String funcName = inp.substring(0, i);
+		System.out.println("\tSyscall '" + funcName + "'");
+		String name = SystemCall.lookup(funcName);
+		System.out.println("\t\tint 0x30 ax = " + name);
+		programCode += "mov ax, " + name + "\n";
+		programCode += "int 0x30\n";
+	}
 	public static OVar createVar(String[] words, String inp)
 	{
 		System.out.println("[MakeVar] Handed '" + inp + "'");
@@ -303,6 +323,13 @@ public class Compiler
 				return true;
 		return false;
 	}
+	public static boolean existsIn(String[] a, String b)
+	{
+		for (String c : a)
+			if (c.equalsIgnoreCase(b))
+				return true;
+		return false;
+	}
 	public static boolean contains(String a, String b)
 	{
 		return a==null?false:a.contains(b)||a.equals(b);
@@ -319,27 +346,45 @@ public class Compiler
 	public static void parse(String inp)
 	{
 		inp = inp.trim();
+		System.out.println("[parse] " + inp);
 		String[] words = smartSplit(inp, ' ');
 		trimArray(words);
 		String firstWord = getFirstRealWord(words);
-		if (contains(Types.defined, firstWord) || contains(Types.primitive, firstWord))
+		if (existsIn(Types.defined, firstWord) || existsIn(Types.primitive, firstWord))
+		{
+			System.out.println("Kgetvardec " + firstWord);
 			createVar(words, inp);
-		if (contains(words, "="))
+		}
+		if (((words.length >= 3 && words[1].equals("=")) || (words.length >= 4 && words[2].equals("="))) && !firstWord.equalsIgnoreCase("for") && !contains(words, "!=") && !contains(words, "==") && !contains(words, "<=") && !contains(words, ">="))
 		{
 			String rest = "";
 			for (int i = 1; i < inp.split("\\Q=\\E").length; i++)
 				rest += inp.split("\\Q=\\E")[i];
+			System.out.println("Parsing things after the '='...");
 			parse(rest);
+			System.out.println("Returned.");
 			OVar v = null;
-			if (contains(Types.defined, firstWord) || contains(Types.primitive, firstWord))
+			if (existsIn(Types.defined, firstWord) || existsIn(Types.primitive, firstWord))
 			{
 				v = getVar(getSecondRealWord(words));
 				System.out.println("'" + getSecondRealWord(words) + "'");
 			}
 			else 
+			{
+				System.out.println("Kgetvar " + firstWord);
 				v = getVar(firstWord);
+			}
 			System.out.println("'" + v.asmName + "' is a var. (I think...)");
 			programCode += "mov [" + v.asmName + "], " + v.getECXform() + "\n";
+		}
+		else if (inp.charAt(0) == '\"')
+		{
+			System.out.println("'" + inp + "' contains a String!");
+			createString(inp);
+		}
+		else if (firstWord.equals("new"))
+		{
+			System.out.println("***\nShould create object here\n***");
 		}
 		else if (firstWord.equals("return"))
 		{
@@ -372,15 +417,43 @@ public class Compiler
 		}
 		else if (isFuncCall(inp))
 		{
-			callFunction(inp);
+			if (syscall)
+			{
+				callSystemFunction(inp);
+				syscall = false;
+			}
+			else
+				callFunction(inp);
+		}
+		else if (firstWord.equals("sys"))
+		{
+			syscall = true;
+			String rest = inp.substring("sys".length(), inp.length());
+			System.out.println("Syscall in '" + rest + "'");
+			parse(rest);
+		}
+		else if (isComparison(inp))
+		{
+			System.out.println("[Compare] '" + inp + "'");
+			handleComparison(inp);
 		}
 		else if (contains(inp, "+") || contains(inp, "-") || contains(inp, "*") || contains(inp, "/"))
 		{
 			System.out.println("MATH THINGS! : '" + inp + "'");
 			programCode += "push edx\t; Math start\n";
-			parse(smartSplit(inp, '+')[1]);
+			char c = '?';
+			if(contains(inp, "*"))
+				c = '*';
+			else if(contains(inp, "/"))
+				c = '/';
+			else if(contains(inp, "+"))
+				c = '+';
+			else if(contains(inp, "-"))
+				c = '-';
+			parse(smartSplit(inp, c)[1]);
 			programCode += "mov edx, ecx\n";
-			parse(firstWord);
+			String second = smartSplit(inp, c)[0];
+			parse(second.substring(0, second.length()-1));
 			if (contains(inp, "+"))
 				programCode += "add ecx, edx\n";
 			else if (contains(inp, "-"))
@@ -393,8 +466,8 @@ public class Compiler
 		}
 		else if (isNumeric(inp))
 		{
-			System.out.println("Numeric value found: " + inp);
-			programCode += "mov ecx, " + inp + "\n";
+			System.out.println("Numeric value found: " + firstWord);
+			programCode += "mov ecx, " + firstWord + "\n";
 		}
 		else if (contains(Types.swappable, firstWord))
 		{
@@ -407,6 +480,10 @@ public class Compiler
 			OVar v = getVar(firstWord);
 			programCode += "mov " + v.getECXform() + ", [" + v.asmName + "]\n";
 		}
+	}
+	public static boolean isVar(String commonName)
+	{
+		return (getVar(commonName)!=null);
 	}
 	public static OVar getVar(String commonName)	// should also check linked OVars...
 	{
@@ -423,6 +500,29 @@ public class Compiler
 		}
 		while (!levelStor.isEmpty())
 			level.push(levelStor.pop());
+		if (contains(commonName, "."))
+		{
+			String currentAdd = "";
+			String[] substrs = commonName.split("\\Q.\\E");
+			trimArray(substrs);
+			boolean gsubs = false;
+			for (String s : substrs)
+			{
+				OVar vs = getVar(s);
+				if (vs != null || gsubs)
+				{
+					gsubs = true;
+					System.out.println("\tisSubVar: " + currentAdd + s);
+					currentAdd = "";
+				}
+				else
+				{
+					System.out.println("\tAdd static to path: " + s);
+					currentAdd += s + ".";
+				}
+			}
+			return null;
+		}
 		if (v==null)	// check libraries
 			v = libvars.get(commonName);
 		if (v==null && contains(commonName, "."))	// check linked ovars
@@ -469,6 +569,11 @@ public class Compiler
 		}
 		String argstr = inp.substring(i+1, e);
 		System.out.println("[ParseArgs] All args should appear in: '" + argstr + "'");
+		if (i+1==e)
+		{
+			System.out.println("[ParseArgs] No arguments found.");
+			return;
+		}
 		String[] args = smartSplit(argstr, ',');
 		System.out.println("[ParseArgs] Found " + args.length + " args");
 		trimArray(args);
@@ -478,6 +583,10 @@ public class Compiler
 			parse(arg);
 			programCode += "push ecx\n";
 		}
+	}
+	static void createString(String inp)
+	{
+		System.err.println("***\nFIX THIS\n***");
 	}
 	static boolean isNumeric(String s)
 	{
@@ -493,6 +602,57 @@ public class Compiler
 					return false;
 			}
 		return true;
+	}
+	static boolean isComparison(String s)	// should check to see if it is in quotes or not first
+	{
+		String[] words = s.split(" ");
+		trimArray(words);
+		if (words.length < 3)
+			return false;
+		if (contains(Types.comparator, words[1]))
+			return true;
+		return false;
+	}
+	static void handleComparison(String s)
+	{
+		String[] words = s.split(" ");
+		trimArray(words);
+		String comparator = words[1];
+		String obj1 = words[0];
+		String obj2 = words[2];
+		programCode += "push edx\n";
+		parse(obj1);
+		programCode += "mov edx, ecx\n";
+		parse(obj2);
+		programCode += "cmp edx, ecx\npop edx\n";
+		String st = "";
+		switch (comparator)
+		{
+			case "!=" :
+				st = "jne";
+				break;
+			case "==" :
+				st = "je";
+				break;
+			case ">=" :
+				st = "jge";
+				break;
+			case "<=" :
+				st = "jle";
+				break;
+			case ">" :
+				st = "jg";
+				break;
+			case "<" :
+				st = "jl";
+				break;
+			default :
+				System.exit(0);
+		}
+		String name = currentClass.name + ".$comp_" + lineNumber;
+		programCode += st + " " + name + ".true\n";	// should probably not use lineNumber...
+		programCode += "mov cl, 0x0\njmp " + name + ".done\n";
+		programCode += name + ".true :\nmov cl, 0xFF\n" + name + ".done :\n\n";
 	}
 	static String[] smartSplit(String s, char match)
 	{
@@ -520,21 +680,48 @@ public class Compiler
 		}
 		return ret;	
 	}
-	static void loadLib(String path)
-	{
-		File dir = new File(path);
-		for (File sub : dir.listFiles())
-			if (contains(sub.getName(), ".varlist"))
-				try
-				{
-					loadSingleLib(sub);
-				}
-				catch (Exception e)
-				{
-					System.out.println("[Library] Failed to load lib '" + sub.getName().replaceAll(".varlist", "") + "'");
-					e.printStackTrace();
-				}
+	
+	
+	public static void copySingleLib(File asmLibFile)
+	{	
+		String inp = "";
+		try
+		{
+			Scanner sc = new Scanner(asmLibFile);
+			inp = sc.nextLine();
+			while (inp != null)
+			{
+				inp += sc.nextLine() + "\n";
+			}
+		}
+		catch (Exception e){}
+		finally
+		{
+			closingCode += "; *** LIB IMPORT '" + asmLibFile.getName().replaceAll(".asm", "") + "' ***\n" + inp + "\n";
+		}
 	}
+	public static void importLib(String name)
+	{
+		try{
+		System.out.println("Attempt to load lib '" + name + "'");
+		for (String dir : libdirs)
+			for (File sub : new File(dir).listFiles())
+			{
+				File varfile = new File(sub.getAbsolutePath().replaceAll(".asm", ".varlist"));
+				if (!sub.isDirectory() && sub.getName().equalsIgnoreCase(name + ".asm") && varfile.exists())
+				{
+					loadSingleLib(varfile);
+					copySingleLib(sub);
+					return;
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			System.out.println("\tFail.");
+		}
+	}
+	
 	static void loadSingleLib(File f) throws Exception
 	{
 		ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
@@ -559,7 +746,27 @@ class Types
 	static String[] defined = {"Window", "Image", "Buffer", "Pointer", "Color"};
 	static String[] modifier = {"linked", "capped", "final", "invis"};
 	static String[] block = {"if", "for", "while"};
+	static String[] comparator = {"!=", "<=", ">=", ">", "<", "==", "seq"};
 	static String[] swappable = {"$LinkedClassSize"};
+}
+class SystemCall
+{
+	static boolean inited = false;
+	static Map<String, String> callList = new HashMap<String, String>();
+	public static void init()
+	{
+		callList.put("Print", "0x0001");
+		callList.put("Println", "0x0002");
+		callList.put("GetMemPercent", "0x0004");
+		callList.put("PrintHex", "0x0003");	// examples, not real things yet
+		inited = true;
+	}
+	public static String lookup(String commonName)
+	{
+		if (!inited)
+			init();
+		return callList.get(commonName);
+	}
 }
 class OVar implements Serializable
 {
@@ -691,6 +898,7 @@ class Function extends Structure
 	static final String RETURN_CODE = "pop edx\npop ebx\npop eax\npush dword [" + Compiler.currentClass.name + ".returnVal]\nret\n";
 	static int returnedOn;
 	ArrayList<OVar> params = new ArrayList<OVar>();
+	Map<String, OVar> subStructureVars = new HashMap<String, OVar>();
 	public Function(OClass claz, String name, String[] mods, String returnType, String[] params, boolean linked)
 	{
 		this.claz = claz;
@@ -720,6 +928,7 @@ class Function extends Structure
 			Compiler.programCode += "pop " + sizeSpec + " [" + v.asmName + "]\n";
 		}
 		Compiler.programCode += "push eax\npush ebx\npush edx\n";
+		Compiler.currentFunction = this;
 	}
 	public void close()
 	{
@@ -727,6 +936,8 @@ class Function extends Structure
 			Compiler.programCode += RETURN_CODE;
 		Compiler.programCode += "\t;Vars:\n";
 		for (Entry e : vars.entrySet())
+			Compiler.declareVar((OVar)e.getValue());
+		for (Entry e : subStructureVars.entrySet())
 			Compiler.declareVar((OVar)e.getValue());
 		Compiler.programCode += "\n\n";
 	}
@@ -741,54 +952,90 @@ abstract class Structure
 class O_If extends Structure
 {
 	public static int loopNum = 0;
+	static String condition;
 	public O_If(String inp)
 	{
 		asmName = Compiler.currentClass.name + ".$loop_if." + loopNum;
 		loopNum++;
 		// parse inp for the needed values
+		condition = inp.trim().substring("if".length(), inp.trim().length()).trim();
 	}
 	public void open()
 	{
-		// code goes here
+		Compiler.level.add(this);
+		Compiler.parse(condition);
+		Compiler.level.pop();
+		Compiler.programCode += "cmp cl, 0xFF\n\tjne " + asmName + "_close\n";
 	}
 	public void close()
 	{
-		// code goes here
+		for (Entry e : vars.entrySet())
+			Compiler.currentFunction.subStructureVars.put((String)e.getKey(), (OVar)e.getValue());
+		Compiler.programCode += asmName + "_close :\n\n";
 	}
 }
 class O_For extends Structure
 {
 	public static int loopNum = 0;
+	static String firstParam, secondParam, thirdParam;
 	public O_For(String inp)
 	{
 		asmName = Compiler.currentClass.name + ".$loop_for." + loopNum;
 		loopNum++;
 		// parse inp for the needed values
+		String rems = inp.trim().substring("for".length(), inp.trim().length()).trim();
+		String[] arr = Compiler.smartSplit(rems, ':');
+		firstParam = arr[0];
+		secondParam = arr[1];
+		thirdParam = arr[2];
 	}
 	public void open()
 	{
 		// code goes here
+		Compiler.level.add(this);
+		Compiler.parse(firstParam);
+		Compiler.level.pop();
+		Compiler.programCode += asmName + "_open :\n";
 	}
 	public void close()
 	{
 		// code goes here
+		Compiler.level.add(this);
+		Compiler.parse(thirdParam);
+		Compiler.parse(secondParam);
+		for (Entry e : vars.entrySet())
+			Compiler.currentFunction.subStructureVars.put((String)e.getKey(), (OVar)e.getValue());
+		Compiler.level.pop();
+		Compiler.programCode += "cmp cl, 0xFF\n\tje " + asmName + "_open\n\n";
 	}
 }
 class O_While extends Structure
 {
 	public static int loopNum = 0;
+	static String condition;
 	public O_While(String inp)
 	{
 		asmName = Compiler.currentClass.name + ".$loop_while." + loopNum;
 		loopNum++;
+		condition = inp.trim().substring("while".length(), inp.trim().length()).trim();
+		System.out.println("[While] '" + condition + "'");
 		// parse inp for the needed values
 	}
 	public void open()
 	{
 		// code goes here
+		Compiler.level.add(this);
+		Compiler.programCode += asmName + "_open :\n";
+		Compiler.parse(condition);
+		for (Entry e : vars.entrySet())
+			Compiler.currentFunction.subStructureVars.put((String)e.getKey(), (OVar)e.getValue());
+		Compiler.level.pop();
+		Compiler.programCode += "cmp cl, 0xFF\n\tjne " + asmName + "_end\n";
 	}
 	public void close()
 	{
 		// code goes here
+		Compiler.programCode += "\tjmp " + asmName + "_open\n";
+		Compiler.programCode += asmName + "_end :\n";
 	}
 }

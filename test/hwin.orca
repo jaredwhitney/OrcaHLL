@@ -1,0 +1,27 @@
+classdef HelloWorldWindowProgram
+	
+	func _init (void : null)
+		sys Println("Hello world!")
+		DisplayWindow()
+		int ramPercent = sys GetMemPercent()
+		PrintRamInfo(ramPercent)
+		sys Print("1 + 2 = ")
+		sys Print(AddOneAndTwo())
+		
+	func DisplayWindow (void : null)
+		Window w = new Window("Test Window", Window.TYPE_TEXT)
+		String text = "Hello World"
+		w.buffer.AppendLine(text.RawToWhite())
+		w.xpos = 10
+	
+	func PrintRamInfo (void : int ramPercent)
+		if (ramPercent > 50)
+			sys Println("Over half of RAM in use!")
+		if (ramPercent <= 50)
+			sys Println("Under half of RAM in use!")
+		sys Print("Percentage of RAM in use: ")
+		sys PrintHex(ramPercent)
+		sys Println("")
+	
+	func AddOneAndTwo (int : null)
+		return 1 + 2

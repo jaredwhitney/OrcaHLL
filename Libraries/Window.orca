@@ -30,58 +30,58 @@ classdef Window #childOf Buffer
 		ret.type = type
 		ret.depth = 0
 		
-		size = 0x7D*0x200
-		if (Graphics.VESA)
-			size = 0x2800*0x200
+		int size = 0x7D*0x200
+		;if (Graphics.VESA)
+		;	size = 0x2800*0x200
 		
-		ret.bufferSize = size
+		;ret.bufferSize = size
 		ret.windowBuffer = new Buffer(size)
 		ret.buffer = new Buffer(size)
 		ret.oldBuffer = new Buffer(size)
 		
-		winNum = Dolphin.registerWindow(ret)
+		ret.winNum = Dolphin.registerWindow(ret)
 		
 		return ret
 
-	linked func GetPreferredHeight (int_s : null)
-		if (this.type == Window.TYPE_TEXT)
-			return 12
-		return (buffer as Image).GetHeight() as int_s
+	; linked func GetPreferredHeight (int_s : null)
+		; if (this.type == Window.TYPE_TEXT)
+			; return 12
+		; return (buffer as Image).GetHeight() as int_s
 
-	linked func GetPreferredWidth (int_s : null)
-		if (this.type == Window.TYPE_TEXT)
-			return (buffer as String).GetLength() as int_s
-		return (buffer as Image).GetWidth() as int_s
+	; linked func GetPreferredWidth (int_s : null)
+		; if (this.type == Window.TYPE_TEXT)
+			; return (buffer as String).GetLength() as int_s
+		; return (buffer as Image).GetWidth() as int_s
 
-	linked func SetSize (void : int_s width, int_s height)
-		this.width = width
-		this.height = height
+	; linked func SetSize (void : int_s width, int_s height)
+		; this.width = width
+		; this.height = height
 	
-	linked func SetPosition (void : int_s x, int_s y)
-		this.xPos = x
-		this.yPos = y
+	; linked func SetPosition (void : int_s x, int_s y)
+		; this.xPos = x
+		; this.yPos = y
 		
-	linked func GetWidth (int_s : null)
-		return this.width
+	; linked func GetWidth (int_s : null)
+		; return this.width
 		
-	linked func GetHeight (int_s : null)
-		return this.height
+	; linked func GetHeight (int_s : null)
+		; return this.height
 		
-	linked func GetX (int_s : null)
-		return this.xPos
+	; linked func GetX (int_s : null)
+		; return this.xPos
 		
-	linked func GetY (int_s : null)
-		return this.yPos
+	; linked func GetY (int_s : null)
+		; return this.yPos
 	
-	linked func SetBuffer (void : Buffer buffer)
-		this.buffer = buffer
+	; linked func SetBuffer (void : Buffer buffer)
+		; this.buffer = buffer
 	
-	linked func GetBuffer (Buffer : null)
-		return this.buffer
+	; linked func GetBuffer (Buffer : null)
+		; return this.buffer
 	
-	linked func SetTitle (void : String title)
-		this.title = title
+	; linked func SetTitle (void : String title)
+		; this.title = title
 	
-	linked func GetTitle (String : null)
-		return this.title
+	; linked func GetTitle (String : null)
+		; return this.title
 

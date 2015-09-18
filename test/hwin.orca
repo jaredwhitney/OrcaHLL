@@ -1,3 +1,4 @@
+import "Window"
 classdef HelloWorldWindowProgram
 	
 	func _init (void : null)
@@ -12,7 +13,7 @@ classdef HelloWorldWindowProgram
 		Window w = new Window("Test Window", Window.TYPE_TEXT)
 		String text = "Hello World"
 		w.buffer.AppendLine(text.RawToWhite())
-		w.xpos = 10
+		w.xPos = 10
 	
 	func PrintRamInfo (void : int ramPercent)
 		if (ramPercent > 50)

@@ -8,7 +8,7 @@ public class Compiler
 	static String programCode = "[bits 32]\n\n", closingCode = "";
 	static Map<String, OClass> classes = new HashMap<String, OClass>();
 	static boolean finishedMacros = false, syscall = false;
-	static int lineNumber, tabLevel, lastTabLevel = 0, lastRealLine;
+	static int lineNumber, tabLevel, lastTabLevel = 0, lastRealLine, gvarsubs = 0;
 	static File f;
 	static Scanner in;
 	static OClass currentClass;
@@ -233,6 +233,8 @@ public class Compiler
 		}
 		else
 		{
+			if (!contains(funcName, "."))
+				funcName = currentClass.asmName + "." + funcName;
 			parseArgs(inp);
 			programCode += "call " + funcName + "\n";
 			System.out.println("[CallFunc] Called function '" + funcName + "'");
@@ -485,6 +487,15 @@ public class Compiler
 	{
 		return (getVar(commonName)!=null);
 	}
+	public static OVar getLinkedTypeFromLib(String className, String varName)
+	{
+		try
+		{
+			return classes.get(className).linkedOVars.get(varName);
+		}
+		catch(Exception e){e.printStackTrace();}
+		return new OVar("NoClassFound", new String[0], "NoClassFound");
+	}
 	public static OVar getVar(String commonName)	// should also check linked OVars...
 	{
 		System.out.println("[GetVar] Handed '" + commonName + "'");
@@ -498,47 +509,85 @@ public class Compiler
 			if (v != null)
 				break;
 		}
+		boolean bToLinked = false;
 		while (!levelStor.isEmpty())
 			level.push(levelStor.pop());
-		if (contains(commonName, "."))
+		if (contains(commonName, ".") && gvarsubs == 0)
 		{
 			String currentAdd = "";
+			String uLevelType = "";
 			String[] substrs = commonName.split("\\Q.\\E");
 			trimArray(substrs);
 			boolean gsubs = false;
-			programCode += "push edx\n";
+			boolean isFirstSub = true;
 			for (String s : substrs)
 			{
 				OVar vs = getVar(s);
-				if (vs != null || gsubs)
+				if (gsubs)
+				{
+					System.out.println("need to grab subvar: Window$." + s);
+					String offs = uLevelType + "." + s;
+					String cName = s;	// ???
+					gvarsubs++;
+					OVar offsvar = getLinkedTypeFromLib(uLevelType, s);
+					String type = offsvar.type;
+					gvarsubs--;
+					if (!type.equals("NoClassFound"))
+					{
+						System.err.println("Found its class: " + type);
+					}
+					System.out.println("subvar to grab is '" + cName + "' (" + type + ") [" + offs + "]");
+					if (type.equals("NoClassFound"))
+					{
+						throw new RuntimeException("Could not determine the type of var '" + s + "'");
+						//bToLinked = true;
+						//break;
+					}
+					/*if (isFirstSub)
+					{
+						isFirstSub = false;
+						programCode += "push edx\n";
+						System.out.println("k.");
+					}*/
+					programCode += "add dl, " + offs + "\n";
+					programCode += "mov eax, edx\n";
+					programCode += "mov edx, [edx]\n";
+				}
+				else if (vs != null)
 				{
 					gsubs = true;
-					System.out.println("\tisSubVar: " + currentAdd + s);
-					currentAdd = "";
-					if (vs==null)
-						throw new RuntimeException("... well that happened: " + commonName + " is invalid (" + s + " does not exist)");
+					System.out.println("\tisMainVar: " + s);
+					//currentAdd = "";
+					//if (vs==null)
+					//	throw new RuntimeException("... well that happened: " + commonName + " is invalid (" + s + " does not exist)");
 					if (vs instanceof OPrimitive)
-						throw new RuntimeException("... well that happened: " + commonName + " is invalid (" + s + " is primitive and cannot have subvars)");
+						throw new RuntimeException("... well that happened: " + commonName + " is invalid (" + s + ") is primitive and cannot have subvars)");
 					System.out.println("\t\tType: " + vs.type);
+					uLevelType = vs.type;
 					// need to grab the subvar here!
-					programCode += "mov ecx, [edx]\n";
-					programCode += "add cl, [" + vs.type + "." + vs.asmName + "]\n";
-					programCode += "mov edx, [ecx]\n";
+					programCode += "push edx\t; Begin getting subvar\n";
+					programCode += "mov edx, [" + vs.asmName + "]\n";
 				}
 				else
 				{
 					System.out.println("\tAdd static to path: " + s);
 					currentAdd += s + ".";
 				}
+				if (bToLinked)
+					break;
 			}
-			programCode += "mov ecx, edx\n";
-			programCode += "pop edx\n";
-			return null;
+			if (!bToLinked)
+			{
+				//throw new RuntimeException("Finish");
+				programCode += "pop edx\t; End getting subvar\n";
+				return new OVar(uLevelType, new String[0], "eax");
+			}
 		}
 		if (v==null)	// check libraries
 			v = libvars.get(commonName);
 		if (v==null && contains(commonName, "."))	// check linked ovars
 		{
+			System.out.println("Check for linked...");
 			String[] splits = commonName.split("\\Q.\\E");
 			String stor = "";
 			for (int i = 0; i < splits.length-1; i++)
@@ -547,9 +596,11 @@ public class Compiler
 			
 			OVar var = getVar(stor);
 			OClass claz = classes.get(var.type);
+			System.out.println("Class '" + claz.name + "': " + claz.linkedOVars.entrySet().size() + " entries.");
 			
 			for (Entry e : claz.linkedOVars.entrySet())
 			{
+				System.out.println("'" + (String)e.getKey() + "' vs '" + splits[splits.length-1] + "'");
 				if (((String)e.getKey()).equals(splits[splits.length-1]))
 				{
 					System.out.println("[GetVar] ITS A LINKED VAR :O '" + commonName + "'");	// great... but how to proccess it? spit out the asm right here???
@@ -609,7 +660,7 @@ public class Compiler
 				boolean notGood = true;
 				for (char x : acceptableNumericChars)
 					if (x==c)
-						notGood = true;
+						notGood = false;
 				if (notGood)
 					return false;
 			}
@@ -715,23 +766,30 @@ public class Compiler
 	public static void importLib(String name)
 	{
 		try{
+			name = name.substring(1, name.length()-1);
 		System.out.println("Attempt to load lib '" + name + "'");
 		for (String dir : libdirs)
+		{
+			System.out.println("\tSearch for lib in: '" + new File(dir).getAbsolutePath() + "' [" + (new File(dir).exists()) + "]");
+			if (new File(dir).exists())
 			for (File sub : new File(dir).listFiles())
 			{
 				File varfile = new File(sub.getAbsolutePath().replaceAll(".asm", ".varlist"));
 				if (!sub.isDirectory() && sub.getName().equalsIgnoreCase(name + ".asm") && varfile.exists())
 				{
+					System.out.println("\t\tLoading lib from: '" + sub.getAbsolutePath() + "'");
 					loadSingleLib(varfile);
 					copySingleLib(sub);
 					return;
 				}
 			}
 		}
+		}
 		catch (Exception e)
 		{
 			System.out.println("\tFail.");
 		}
+		throw new RuntimeException("Failed to load lib: '" + name + "'");
 	}
 	
 	static void loadSingleLib(File f) throws Exception
@@ -749,6 +807,20 @@ public class Compiler
 				libvars.put(className + "." + o.getKey(), (OVar)o.getValue());
 		}
 		// do something with the linked ovars here...
+		try
+		{
+		OClass claz = new OClass(className, null);
+		claz.linkedOVars = new HashMap<String, OVar>();
+		for (Entry o : linkedVars.entrySet())
+		{
+			if (o.getValue() instanceof SerializableOPrimitive)
+				claz.linkedOVars.put((String)o.getKey(), new OPrimitive((SerializableOPrimitive)o.getValue()));
+			else
+				claz.linkedOVars.put((String)o.getKey(), (OVar)o.getValue());
+			System.out.println("Record linked var '" + o.getKey() + "'");
+		}
+		classes.put(className, claz);
+		}catch(Exception e){e.printStackTrace();}
 	}
 }
 class Types
@@ -874,7 +946,8 @@ class OClass extends Structure
 		Compiler.programCode += name + ".returnVal:\n\tdd 0x0\n";
 		Compiler.programCode += name + ".$FILE_END :";
 		try{
-			ObjectOutputStream varList = new ObjectOutputStream(new FileOutputStream(name + ".varlist"));
+			ObjectOutputStream varList = new ObjectOutputStream(new FileOutputStream(Compiler.f.getAbsolutePath().replaceAll(".orca", ".varlist")));
+			System.out.println("writing varList to: " + Compiler.f.getAbsolutePath().replaceAll(".orca", ".varlist"));
 			Map<String, Object> vout = new HashMap<String, Object>();
 			for (Entry e : vars.entrySet())
 				if (e.getValue() instanceof OPrimitive)

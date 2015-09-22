@@ -16,9 +16,9 @@ classdef HelloWorldWindowProgram
 		w.xPos = 10
 	
 	func PrintRamInfo (void : int ramPercent)
-		if (ramPercent > 50)
+		if ramPercent > 50
 			sys Println("Over half of RAM in use!")
-		if (ramPercent <= 50)
+		if ramPercent <= 50
 			sys Println("Under half of RAM in use!")
 		sys Print("Percentage of RAM in use: ")
 		sys PrintHex(ramPercent)

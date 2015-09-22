@@ -5,73 +5,95 @@ db "OrcaHLL Class", 0
 db "Window", 0
 Window.$FILE_START :
 
-Window.$offs.lastxPos equ 14
-Window.$offs.winNum equ 43
-Window.$offs.lastyPos equ 18
-Window.$offs.yPos equ 16
-Window.$offs.windowBuffer equ 22
-Window.$offs.rectlBase equ 35
-Window.$offs.needsRectUpdate equ 34
-Window.$offs.xPos equ 12
-Window.$offs.title equ 0
-Window.$offs.type equ 20
-Window.$offs.rectlTop equ 39
-Window.$offs.depth equ 21
-Window.$offs.width equ 4
-Window.$offs.lastWidth equ 6
-Window.$offs.buffer equ 26
-Window.$offs.lastHeight equ 10
-Window.$offs.oldBuffer equ 30
-Window.$offs.height equ 8
+Window.lastxPos equ 14
+Window.winNum equ 43
+Window.lastyPos equ 18
+Window.yPos equ 16
+Window.windowBuffer equ 22
+Window.rectlBase equ 35
+Window.needsRectUpdate equ 34
+Window.xPos equ 12
+Window.title equ 0
+Window.type equ 20
+Window.rectlTop equ 39
+Window.depth equ 21
+Window.width equ 4
+Window.lastWidth equ 6
+Window.buffer equ 26
+Window.lastHeight equ 10
+Window.oldBuffer equ 30
+Window.height equ 8
 
 Window.Create: 
 pop dword [Window.returnVal]
-pop dword [Window.$local.title]
-pop dword [Window.$local.type]
+pop dword [Window.Create.$local.title]
+pop dword [Window.Create.$local.type]
 push eax
 push ebx
 push edx
 mov [Window.Create.$local.ret], ecx
-mov ecx, [Window.$local.title]
-push edx
-mov [Window.$offs.title], ecx
+mov ecx, [Window.Create.$local.title]
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
+add dl, Window.title
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
 mov ecx, 4
-push edx
-mov [Window.$offs.width], cx
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
+add dl, Window.width
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
 mov ecx, 4
-push edx
-mov [Window.$offs.height], cx
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
+add dl, Window.height
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
 mov ecx, 0
-push edx
-mov [Window.$offs.xPos], cx
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
+add dl, Window.xPos
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
 mov ecx, 8
-push edx
-mov [Window.$offs.yPos], cx
-mov ecx, [Window.$local.type]
-push edx
-mov [Window.$offs.type], cl
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
+add dl, Window.yPos
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
+mov ecx, [Window.Create.$local.type]
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
+add dl, Window.type
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
 mov ecx, 0
-push edx
-mov [Window.$offs.depth], cl
-push edx	; Math start
-mov ecx, 0x200
-mov edx, ecx
-mov ecx, 0x7D
-imul ecx, edx
-pop edx	; Math end
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
+add dl, Window.depth
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
+mov ax, null
+int 0x30
 mov [Window.Create.$local.size], ecx
-push edx
-mov [Window.$offs.windowBuffer], ecx
-push edx
-mov [Window.$offs.buffer], ecx
-push edx
-mov [Window.$offs.oldBuffer], ecx
-mov ecx, [Window.Create.$local.ret]
-push ecx
-call Dolphin.registerWindow
-push edx
-mov [Window.$offs.winNum], cx
-mov ecx, [Window.Create.$local.ret]
+mov ecx, [Window.Create.$local.size]
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
 pop edx
 pop ebx
 pop eax
@@ -82,8 +104,13 @@ Window.Create.$local.ret :
 	dd 0x0
 Window.Create.$local.size :
 	dd 0x0
+Window.Create.$local.title :
+	dd 0x0
+Window.Create.$local.type :
+	dd 0x0
 
 
 Window.returnVal:
 	dd 0x0
 Window.$FILE_END :
+

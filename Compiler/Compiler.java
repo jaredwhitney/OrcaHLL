@@ -46,6 +46,7 @@ public class Compiler
 			while (!level.isEmpty())
 				level.pop().close();
 			out.println(programCode);
+			out.println(closingCode);
 			out.close();
 		}
 	}
@@ -105,9 +106,9 @@ public class Compiler
 					System.out.println("Var dec is linked.");
 					OVar v;
 					if (contains(Types.primitive, type))
-						v = new OPrimitive(type, mods, claz.classSize, className + ".$offs." + name);
+						v = new OPrimitive(type, mods, claz.classSize, className + "." + name);
 					else
-						v = new OVar(type, mods, claz.classSize, className + ".$offs." + name);
+						v = new OVar(type, mods, claz.classSize, className + "." + name);
 					claz.linkedOVars.put(name, v);
 					claz.classSize += v.refSize;
 				}
@@ -196,7 +197,6 @@ public class Compiler
 		String[] params = smartSplit(smartSplit(inp, ':')[1], ',');
 		trimArray(params);
 		Function func = new Function(currentClass, getSecondRealWord(words), mods, returnType, params, linked);
-		level.add(func);
 		System.out.println("[MakeFunc] On level_" + level.size());
 		System.out.println("[MakeFunc] Added '" + level.peek().getClass().getName() + "'");
 		func.open();
@@ -205,6 +205,7 @@ public class Compiler
 	{}
 	public static void callFunction(String inp)
 	{
+		boolean n_up_b = false;
 		int i = 0;
 		for (char c : inp.toCharArray())
 		{
@@ -233,9 +234,27 @@ public class Compiler
 		}
 		else
 		{
+			String[] twds = funcName.split("\\Q.\\E");
 			if (!contains(funcName, "."))
 				funcName = currentClass.asmName + "." + funcName;
+			else if (isVar(twds[0]) || (twds.length > 2 && isVar(twds[0]+'.'+twds[1])))
+			{
+				System.out.println("Woah! '" + funcName + "' is a linked function :o");
+				String lvar = "";
+				for (int ic = 0; ic < twds.length-1; ic++)
+					lvar += twds[ic] + '.';
+				lvar = lvar.substring(0, lvar.length()-1);
+				System.out.println("\tVar is '" + lvar + "'");
+				OVar v = getVar(lvar);
+				System.out.println("Calling '" + funcName + "' on var '" + v.asmName + "'");
+				programCode += "push ebx\n";
+				n_up_b = true;
+				programCode += "mov ebx, " + v.asmName + "\n";
+				//System.exit(0);
+			}
 			parseArgs(inp);
+			if (n_up_b)
+				programCode += "pop ebx\n";
 			programCode += "call " + funcName + "\n";
 			System.out.println("[CallFunc] Called function '" + funcName + "'");
 			// handle actual function calls here!
@@ -269,6 +288,8 @@ public class Compiler
 		String funcName = inp.substring(0, i);
 		System.out.println("\tSyscall '" + funcName + "'");
 		String name = SystemCall.lookup(funcName);
+		syscall = false;
+		parseArgs(inp);
 		System.out.println("\t\tint 0x30 ax = " + name);
 		programCode += "mov ax, " + name + "\n";
 		programCode += "int 0x30\n";
@@ -343,7 +364,7 @@ public class Compiler
 			dec = "db";
 		else if (v.refSize == 2)
 			dec = "dw";
-		programCode += v.asmName + " :\n\t" + dec + " 0x0\n";
+		programCode += v.asmName + " :\n\t" + dec + " " + v.ival + "\n";
 	}
 	public static void parse(String inp)
 	{
@@ -382,7 +403,8 @@ public class Compiler
 		else if (inp.charAt(0) == '\"')
 		{
 			System.out.println("'" + inp + "' contains a String!");
-			createString(inp);
+			OVar v = createString(inp);
+			programCode += "mov " + v.getECXform() + ", [" + v.asmName + "]\n";
 		}
 		else if (firstWord.equals("new"))
 		{
@@ -422,7 +444,6 @@ public class Compiler
 			if (syscall)
 			{
 				callSystemFunction(inp);
-				syscall = false;
 			}
 			else
 				callFunction(inp);
@@ -525,7 +546,7 @@ public class Compiler
 				OVar vs = getVar(s);
 				if (gsubs)
 				{
-					System.out.println("need to grab subvar: Window$." + s);
+					//System.out.println("need to grab subvar: Window$." + s);
 					String offs = uLevelType + "." + s;
 					String cName = s;	// ???
 					gvarsubs++;
@@ -647,9 +668,26 @@ public class Compiler
 			programCode += "push ecx\n";
 		}
 	}
-	static void createString(String inp)
+	static OVar createString(String inp)
 	{
-		System.err.println("***\nFIX THIS\n***");
+		//System.err.println("***\nFIX THIS\n***");
+		System.out.println("[MakeString] Handed '" + inp + "'");
+		String asmName = level.peek().asmName + ".string_" + level.peek().stringLevel++;
+		String type = "String";
+		String name = inp.trim();
+		String dat_asmName = asmName + "_data";
+		String dat_type = "byte";
+		String dat_name = dat_asmName + "@INVALID:STR_REF";
+		
+		OVar dat = new OPrimitive(dat_type, new String[0], dat_asmName);
+		dat.ival = inp + ", 0";
+		level.peek().vars.put(dat_name, dat);
+		OVar var = new OVar(type, new String[0], asmName);
+		var.ival = dat_asmName;
+		level.peek().vars.put(name, var);
+		
+		return var;
+		
 	}
 	static boolean isNumeric(String s)
 	{
@@ -757,7 +795,7 @@ public class Compiler
 				inp += sc.nextLine() + "\n";
 			}
 		}
-		catch (Exception e){}
+		catch (Exception e){e.printStackTrace();}
 		finally
 		{
 			closingCode += "; *** LIB IMPORT '" + asmLibFile.getName().replaceAll(".asm", "") + "' ***\n" + inp + "\n";
@@ -842,7 +880,8 @@ class SystemCall
 		callList.put("Print", "0x0001");
 		callList.put("Println", "0x0002");
 		callList.put("GetMemPercent", "0x0004");
-		callList.put("PrintHex", "0x0003");	// examples, not real things yet
+		callList.put("PrintHex", "0x0003");
+		callList.put("RegisterWindow", "0x0005");// examples, not real things yet
 		inited = true;
 	}
 	public static String lookup(String commonName)
@@ -856,6 +895,7 @@ class OVar implements Serializable
 {
 	String type;
 	String asmName;
+	String ival = "0x0";
 	String[] modifiers;
 	Integer refSize = 4;
 	Integer linkedOffset = -1;
@@ -991,6 +1031,7 @@ class Function extends Structure
 		this.mods = mods;
 		this.linked = linked;
 		this.asmName = Compiler.currentClass.name + "." + name;
+		Compiler.level.push(this);
 		if (!params[0].equals("null)"))
 			for (String p : params)
 			{
@@ -1031,6 +1072,7 @@ abstract class Structure
 {
 	Map<String, OVar> vars = new HashMap<String, OVar>();
 	String asmName;
+	int stringLevel = 0;
 	public abstract void open();
 	public abstract void close();
 }

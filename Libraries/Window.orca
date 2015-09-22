@@ -30,23 +30,21 @@ classdef Window #childOf Buffer
 		ret.type = type
 		ret.depth = 0
 		
-		int size = 0x7D*0x200
-		;if (Graphics.VESA)
-		;	size = 0x2800*0x200
+		int size = sys GetScreenSize()
 		
-		;ret.bufferSize = size
+		ret.bufferSize = size
 		ret.windowBuffer = new Buffer(size)
 		ret.buffer = new Buffer(size)
 		ret.oldBuffer = new Buffer(size)
 		
-		ret.winNum = Dolphin.registerWindow(ret)
+		ret.winNum = sys RegisterWindow(ret)
 		
 		return ret
 
-	; linked func GetPreferredHeight (int_s : null)
-		; if (this.type == Window.TYPE_TEXT)
-			; return 12
-		; return (buffer as Image).GetHeight() as int_s
+	linked func GetPreferredHeight (int_s : null)
+		if (this.type == Window.TYPE_TEXT)
+			return 12
+		return (buffer as Image).GetHeight() as int_s
 
 	; linked func GetPreferredWidth (int_s : null)
 		; if (this.type == Window.TYPE_TEXT)

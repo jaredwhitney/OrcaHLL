@@ -1,0 +1,33 @@
+Linked function calls			[DONE]
+Linked self vars (this.asdf)		[    ]
+String literals need to be declared	[DONE]
+ival should be included in libs?	[   ?]
+syscalls need to parse args		[    ]
+copyLib does not work (just copy asm)	[DONE]
+parameters do not declare correctly	[DONE]
+returnVal is overwritten next func call [    ]
+
+
+
+
+
+
+
+
+
+String title = "TEST"
+say(title)
+
+
+->
+
+mov ecx, string_0
+mov [title], ecx
+
+push [title]
+call say
+
+title :
+	dd 0x0
+string_0 :
+	db "TEST", 0

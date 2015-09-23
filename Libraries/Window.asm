@@ -6,16 +6,16 @@ db "Window", 0
 Window.$FILE_START :
 
 Window.lastxPos equ 14
-Window.winNum equ 43
+Window.winNum equ 47
 Window.lastyPos equ 18
 Window.yPos equ 16
 Window.windowBuffer equ 22
-Window.rectlBase equ 35
-Window.needsRectUpdate equ 34
+Window.rectlBase equ 39
+Window.needsRectUpdate equ 38
 Window.xPos equ 12
 Window.title equ 0
 Window.type equ 20
-Window.rectlTop equ 39
+Window.rectlTop equ 43
 Window.depth equ 21
 Window.width equ 4
 Window.lastWidth equ 6
@@ -23,6 +23,7 @@ Window.buffer equ 26
 Window.lastHeight equ 10
 Window.oldBuffer equ 30
 Window.height equ 8
+Window.bufferSize equ 34
 
 Window.Create: 
 pop dword [Window.returnVal]
@@ -94,6 +95,44 @@ mov [Window.Create.$local.size], ecx
 mov ecx, [Window.Create.$local.size]
 push edx	; Begin getting subvar
 mov edx, [Window.Create.$local.ret]
+add dl, Window.bufferSize
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
+add dl, Window.windowBuffer
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
+add dl, Window.buffer
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
+add dl, Window.oldBuffer
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
+mov ecx, [Window.Create.$local.ret]
+push ecx
+mov ax, 0x0005
+int 0x30
+push edx	; Begin getting subvar
+mov edx, [Window.Create.$local.ret]
+add dl, Window.winNum
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
+mov ecx, [Window.Create.$local.ret]
 pop edx
 pop ebx
 pop eax
@@ -107,6 +146,46 @@ Window.Create.$local.size :
 Window.Create.$local.title :
 	dd 0x0
 Window.Create.$local.type :
+	dd 0x0
+
+
+Window.GetPreferredHeight: 
+pop dword [Window.returnVal]
+push eax
+push ebx
+push edx
+push edx
+push edx	; Begin getting subvar
+mov edx, [ebx]
+add dl, Window.type
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov ecx, [eax]
+mov edx, ecx
+pop edx	; End getting subvar
+mov ecx, [eax]
+cmp edx, ecx
+pop edx
+je Window.$comp_23.true
+mov cl, 0x0
+jmp Window.$comp_23.done
+Window.$comp_23.true :
+mov cl, 0xFF
+Window.$comp_23.done :
+
+cmp cl, 0xFF
+	jne Window.$loop_if.0_close
+mov ecx, 12
+pop edx
+pop ebx
+pop eax
+push dword [Window.returnVal]
+ret
+Window.$loop_if.0_close :
+
+	;Vars:
+Window.GetPreferredHeight.$local.as :
 	dd 0x0
 
 

@@ -15,6 +15,7 @@ classdef Window #childOf Buffer
 	invis linked Buffer windowBuffer
 	invis linked Buffer buffer
 	invis linked Buffer oldBuffer
+	invis linked int bufferSize
 	invis linked byte needsRectUpdate
 	invis linked int rectlBase
 	invis linked int rectlTop
@@ -42,7 +43,7 @@ classdef Window #childOf Buffer
 		return ret
 
 	linked func GetPreferredHeight (int_s : null)
-		if (this.type == Window.TYPE_TEXT)
+		if this.type == Window.TYPE_TEXT
 			return 12
 		return (buffer as Image).GetHeight() as int_s
 

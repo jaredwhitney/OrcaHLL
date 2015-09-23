@@ -1,12 +1,13 @@
 Linked function calls			[DONE]
-Linked self vars (this.asdf)		[    ]
+Linked self vars (this.asdf)		[DONE]
 String literals need to be declared	[DONE]
 ival should be included in libs?	[   ?]
-syscalls need to parse args		[    ]
+syscalls need to parse args		[DONE]
 copyLib does not work (just copy asm)	[DONE]
 parameters do not declare correctly	[DONE]
-returnVal is overwritten next func call [    ]
-
+returnVal is overwritten next func call [    ] need a stack or something? look into the way functions are structured.
+handle 'as'				[    ]
+handle parenthesis			[    ]
 
 
 
@@ -31,3 +32,14 @@ title :
 	dd 0x0
 string_0 :
 	db "TEST", 0
+
+
+mov ebx, var0
+call String.makeRaw
+
+ebx -> var0
+
+var0 -> var0data
+
+var0data :
+data goes here ??

@@ -246,16 +246,18 @@ public class Compiler
 				lvar = lvar.substring(0, lvar.length()-1);
 				System.out.println("\tVar is '" + lvar + "'");
 				OVar v = getVar(lvar);
-				System.out.println("Calling '" + funcName + "' on var '" + v.asmName + "'");
+				String funcToCall = v.type + funcName.substring(funcName.split("\\Q.\\E")[0].length(), funcName.length());
+				System.out.println("Calling '" + funcToCall + "' on var '" + v.asmName + "'");
 				programCode += "push ebx\n";
 				n_up_b = true;
 				programCode += "mov ebx, " + v.asmName + "\n";
+				funcName = funcToCall;
 				//System.exit(0);
 			}
 			parseArgs(inp);
+			programCode += "call " + funcName + "\n";
 			if (n_up_b)
 				programCode += "pop ebx\n";
-			programCode += "call " + funcName + "\n";
 			System.out.println("[CallFunc] Called function '" + funcName + "'");
 			// handle actual function calls here!
 		}
@@ -373,7 +375,7 @@ public class Compiler
 		String[] words = smartSplit(inp, ' ');
 		trimArray(words);
 		String firstWord = getFirstRealWord(words);
-		if (existsIn(Types.defined, firstWord) || existsIn(Types.primitive, firstWord))
+		if (existsIn(Types.defined, firstWord) || existsIn(Types.primitive, firstWord) || isClassName(firstWord))
 		{
 			System.out.println("Kgetvardec " + firstWord);
 			createVar(words, inp);
@@ -387,7 +389,7 @@ public class Compiler
 			parse(rest);
 			System.out.println("Returned.");
 			OVar v = null;
-			if (existsIn(Types.defined, firstWord) || existsIn(Types.primitive, firstWord))
+			if (existsIn(Types.defined, firstWord) || existsIn(Types.primitive, firstWord) || isClassName(firstWord))
 			{
 				v = getVar(getSecondRealWord(words));
 				System.out.println("'" + getSecondRealWord(words) + "'");
@@ -508,6 +510,10 @@ public class Compiler
 	{
 		return (getVar(commonName)!=null);
 	}
+	public static boolean isClassName(String inp)
+	{
+		return (classes.get(inp)!=null);
+	}
 	public static OVar getLinkedTypeFromLib(String className, String varName)
 	{
 		try
@@ -533,6 +539,12 @@ public class Compiler
 		boolean bToLinked = false;
 		while (!levelStor.isEmpty())
 			level.push(levelStor.pop());
+		
+		if (commonName.equals("this") && v==null)
+		{
+			System.out.println("Handle 'this'");
+			return new OVar(currentClass.name, new String[0], "ebx");
+		}
 		if (contains(commonName, ".") && gvarsubs == 0)
 		{
 			String currentAdd = "";
@@ -579,8 +591,6 @@ public class Compiler
 					gsubs = true;
 					System.out.println("\tisMainVar: " + s);
 					//currentAdd = "";
-					//if (vs==null)
-					//	throw new RuntimeException("... well that happened: " + commonName + " is invalid (" + s + " does not exist)");
 					if (vs instanceof OPrimitive)
 						throw new RuntimeException("... well that happened: " + commonName + " is invalid (" + s + ") is primitive and cannot have subvars)");
 					System.out.println("\t\tType: " + vs.type);
@@ -863,7 +873,7 @@ public class Compiler
 }
 class Types
 {
-	static String[] primitive = {"int", "int_s", "bool", "byte", "String", "this"};	// String and this are special cases
+	static String[] primitive = {"int", "int_s", "bool", "byte", "String"};	// String and this are special cases
 	static String[] special = {"null", "void"};
 	static String[] defined = {"Window", "Image", "Buffer", "Pointer", "Color"};
 	static String[] modifier = {"linked", "capped", "final", "invis"};

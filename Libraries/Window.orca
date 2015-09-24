@@ -45,7 +45,8 @@ classdef Window #childOf Buffer
 	linked func GetPreferredHeight (int_s : null)
 		if this.type == Window.TYPE_TEXT
 			return 12
-		return (buffer as Image).GetHeight() as int_s
+		Image temp = buffer
+		return temp.GetHeight()
 
 	; linked func GetPreferredWidth (int_s : null)
 		; if (this.type == Window.TYPE_TEXT)

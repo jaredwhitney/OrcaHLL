@@ -462,6 +462,15 @@ public class Compiler
 			System.out.println("[Compare] '" + inp + "'");
 			handleComparison(inp);
 		}
+		/*else if (words.length > 1 && getSecondRealWord(words).equals("as"))	// There needs to be some better way of doing this...
+		{
+			String[] arr = smartSplit(inp, "as");
+			String firstPart = arr[0];
+			String secondPart = arr[1];
+			System.out.println("\tFigure out '" + firstPart + "' as '" + secondPart + "'");
+			if (isVar(firstPart))
+				getVar(firstPart).type = secondPart;
+		}*/
 		else if (contains(inp, "+") || contains(inp, "-") || contains(inp, "*") || contains(inp, "/"))
 		{
 			System.out.println("MATH THINGS! : '" + inp + "'");
@@ -792,6 +801,40 @@ public class Compiler
 		return ret;	
 	}
 	
+	static String[] smartSplit(String s, String match)
+	{
+		boolean inQuotes = false;
+		int lastSplit = -match.length();
+		ArrayList<String> found = new ArrayList<String>();
+		for (int i = 0; i < s.length(); i++)
+		{
+			char c = s.charAt(i);
+			if (c=='\"')
+				inQuotes = !inQuotes;
+			if (!inQuotes && c==match.charAt(0))
+			{
+				boolean cont = true;
+				for (int z = 0; z < match.length(); z++)
+					if (s.charAt(z+i)=='\"' || s.charAt(z+i)!=match.charAt(z))
+						cont = false;
+				if (cont)
+				{
+					found.add(s.substring(lastSplit+match.length(), i));
+					lastSplit = i;
+				}
+			}
+		}
+		if (lastSplit != s.length())
+			found.add(s.substring(lastSplit+match.length(), s.length()));
+		String[] ret = new String[found.size()];
+		for (int i = 0; i < ret.length; i++)
+		{
+			ret[i] = found.get(i);
+		}
+		trimArray(ret);
+		return ret;	
+	}
+	
 	
 	public static void copySingleLib(File asmLibFile)
 	{	
@@ -888,7 +931,7 @@ class SystemCall
 	public static void init()
 	{
 		callList.put("Print", "0x0001");
-		callList.put("Println", "0x0002");
+		callList.put("PrintLine", "0x0002");
 		callList.put("GetMemPercent", "0x0004");
 		callList.put("PrintHex", "0x0003");
 		callList.put("RegisterWindow", "0x0005");// examples, not real things yet

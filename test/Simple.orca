@@ -1,10 +1,9 @@
 classdef Simple
-	linked func _run (void : null)
-		this._test()
+	func _run (void : null)
+		Simple s = new Simple()
+		s._test()
 	linked func _test (void : null)
 		Simple obj = this
-		Simple obj2 = obj
-		;int x = 0
-		;int y = x
-		;x = y
+		String obj2 = obj
+		int length = obj2.GetLength()
 		

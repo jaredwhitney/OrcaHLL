@@ -930,11 +930,33 @@ class SystemCall
 	static Map<String, String> callList = new HashMap<String, String>();
 	public static void init()
 	{
-		callList.put("Print", "0x0001");
-		callList.put("PrintLine", "0x0002");
-		callList.put("GetMemPercent", "0x0004");
-		callList.put("PrintHex", "0x0003");
-		callList.put("RegisterWindow", "0x0005");// examples, not real things yet
+		callList.put("System.GetValue",	"0x0001");
+		callList.put("Console.Print",		"0x0100");
+		callList.put("Console.PrintLine",	"0x0101");
+		callList.put("Console.PrintHex",	"0x0102");
+		callList.put("Console.Newline",		"0x0103");
+		callList.put("Console.Clear",		"0x0104");
+		callList.put("Dolphin.RegisterWindow",		"0x0200");
+		callList.put("Dolphin.UnregisterWindow",	"0x0201");
+		callList.put("Debug.Log",		"0x0301");
+		callList.put("Debug.LogHex",	"0x0302");
+		callList.put("Keyboard.AddKeypressHandler",		"0x0401");
+		callList.put("Keyboard.RemoveKeypressHandler",	"0x0402");
+		callList.put("Keyboard.IsKeyPressed",			"0x0403");
+		callList.put("Program.Exit",		"0x0500");
+		callList.put("Program.RequestRam",	"0x0501");
+		callList.put("Mouse.GetX",						"0x0600");
+		callList.put("Mouse.GetY",						"0x0601");
+		callList.put("Mouse.IsButtonPressed",			"0x0602");
+		callList.put("Mouse.AddButtonpressListener",	"0x0603");
+		callList.put("Mouse.RemoveButtonpressListener",	"0x0604");
+		callList.put("Time.GetSecond",	"0x0701");
+		callList.put("Time.GetMinute",	"0x0702");
+		callList.put("Time.GetHour",	"0x0703");
+		callList.put("Time.GetYear",	"0x0704");
+		callList.put("Minnow.Open",	"0x0801");
+		callList.put("Guppy.GetTotalRAM",	"0x0901");
+		callList.put("Guppy.GetUsedRAM",	"0x0902");
 		inited = true;
 	}
 	public static String lookup(String commonName)

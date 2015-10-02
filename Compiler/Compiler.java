@@ -419,7 +419,7 @@ public class Compiler
 			for (int i = 1; i < words.length; i++)
 				rest += words[i] + " ";
 			parse(rest.trim());
-			programCode += Function.RETURN_CODE;
+			programCode += currentFunction.RETURN_CODE;
 			Function.returnedOn = lineNumber;
 			System.out.println("[Return] End handling return.");
 		}
@@ -507,6 +507,11 @@ public class Compiler
 		{
 			System.out.println("Replace '" + firstWord + "'");
 			programCode += "mov ecx, " + currentClass.classSize + "\n";
+		}
+		else if (SystemConstant.lookup(firstWord) != null)
+		{
+			System.out.println("Replace '" + firstWord + "'");
+			programCode += "mov ecx, " + SystemConstant.lookup(firstWord) + "\t; System Constant\n";
 		}
 		else
 		{
@@ -943,8 +948,9 @@ class SystemCall
 		callList.put("Keyboard.AddKeypressHandler",		"0x0401");
 		callList.put("Keyboard.RemoveKeypressHandler",	"0x0402");
 		callList.put("Keyboard.IsKeyPressed",			"0x0403");
-		callList.put("Program.Exit",		"0x0500");
-		callList.put("Program.RequestRam",	"0x0501");
+		callList.put("Program.Exit",	"0x0500");
+		callList.put("Program.Alloc",	"0x0501");
+		callList.put("Program.Ealloc",	"0x0502");
 		callList.put("Mouse.GetX",						"0x0600");
 		callList.put("Mouse.GetY",						"0x0601");
 		callList.put("Mouse.IsButtonPressed",			"0x0602");
@@ -955,8 +961,6 @@ class SystemCall
 		callList.put("Time.GetHour",	"0x0703");
 		callList.put("Time.GetYear",	"0x0704");
 		callList.put("Minnow.Open",	"0x0801");
-		callList.put("Guppy.GetTotalRAM",	"0x0901");
-		callList.put("Guppy.GetUsedRAM",	"0x0902");
 		inited = true;
 	}
 	public static String lookup(String commonName)
@@ -964,6 +968,29 @@ class SystemCall
 		if (!inited)
 			init();
 		return callList.get(commonName);
+	}
+}
+class SystemConstant
+{
+	static boolean inited = false;
+	static Map<String, String> valList = new HashMap<String, String>();
+	public static void init()
+	{
+		valList.put("VIDEO_MODE", "0x0");
+		valList.put("SCREEN_BYTEWIDTH", "0x1");
+		valList.put("SCREEN_HEIGHT", "0x2");
+		valList.put("SCREEN_BPP", "0x3");
+		valList.put("RAM_TOTAL", "0x4");
+		valList.put("RAM_USED", "0x5");
+		valList.put("CLOCK_TICS", "0x6");
+		valList.put("GRAPHICSCARD_NAME", "0x7");
+		valList.put("PROCESSCOUNT", "0x8");
+	}
+	public static String lookup(String commonName)
+	{
+		if (!inited)
+			init();
+		return valList.get(commonName);
 	}
 }
 class OVar implements Serializable
@@ -1058,7 +1085,6 @@ class OClass extends Structure
 	}
 	public void close()
 	{
-		Compiler.programCode += name + ".returnVal:\n\tdd 0x0\n";
 		Compiler.programCode += name + ".$FILE_END :";
 		try{
 			ObjectOutputStream varList = new ObjectOutputStream(new FileOutputStream(Compiler.f.getAbsolutePath().replaceAll(".orca", ".varlist")));
@@ -1095,7 +1121,7 @@ class Function extends Structure
 	String name;
 	String[] mods;
 	boolean linked;
-	static final String RETURN_CODE = "pop edx\npop ebx\npop eax\npush dword [" + Compiler.currentClass.name + ".returnVal]\nret\n";
+	final String RETURN_CODE;
 	static int returnedOn;
 	ArrayList<OVar> params = new ArrayList<OVar>();
 	Map<String, OVar> subStructureVars = new HashMap<String, OVar>();
@@ -1114,11 +1140,12 @@ class Function extends Structure
 				OVar v = Compiler.createVar(Compiler.smartSplit(p, ' '), p);
 				this.params.add(v);
 			}
+		RETURN_CODE = "pop edx\npop ebx\npop eax\npush dword [" + Compiler.currentClass.name + "." + name + ".returnVal]\nret\n";
 	}
 	public void open()
 	{
 		Compiler.programCode += claz.name + "." + name + ": \n";
-		Compiler.programCode += "pop dword [" + Compiler.currentClass.name + ".returnVal]\n";
+		Compiler.programCode += "pop dword [" + Compiler.currentClass.name + "." + name + ".returnVal]\n";
 		for (OVar v : params)
 		{
 			String sizeSpec = "dword";
@@ -1140,6 +1167,7 @@ class Function extends Structure
 			Compiler.declareVar((OVar)e.getValue());
 		for (Entry e : subStructureVars.entrySet())
 			Compiler.declareVar((OVar)e.getValue());
+		Compiler.programCode += Compiler.currentClass.name + "." + name + ".returnVal:\n\tdd 0x0\n";
 		Compiler.programCode += "\n\n";
 	}
 }

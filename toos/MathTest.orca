@@ -1,0 +1,16 @@
+classdef MathTest
+	func _init (void : null)
+		sys Console.Clear()
+		int y = getNumber()
+		sys Console.Print("Y is 0x")
+		sys Console.PrintHex(y)
+		sys Console.Newline()
+		y = y + 5
+		sys Console.Print("Y is now 0x")
+		sys Console.PrintHex(y)
+		sys Console.Newline()
+		sys Console.Print("Y-2 = 0x")
+		sys Console.PrintHex(y-2)
+		
+	func getNumber (int : null)
+		return 3

@@ -41,6 +41,10 @@ public class Compiler
 			lineNumber++;
 		}}
 		catch (java.util.NoSuchElementException e){}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
 		finally
 		{
 			while (!level.isEmpty())
@@ -127,11 +131,12 @@ public class Compiler
 			}
 			inp = removeComments(in.nextLine()).trim();
 		}
-		
+		System.out.println("Check linked processing...");
 		for (Entry<String, OVar> e : claz.linkedOVars.entrySet())
 		{
 			OVar v = e.getValue();
 			programCode += v.asmName + " equ " + v.linkedOffset + "\n";
+			System.out.println("Defined a constant");
 		}
 		programCode += claz.linkedOVars.entrySet().size()>0?"\n":"";
 		for (Entry<String, OVar> e : claz.vars.entrySet())
@@ -411,6 +416,7 @@ public class Compiler
 		else if (firstWord.equals("new"))
 		{
 			System.out.println("***\nShould create object here\n***");
+			// FIGURE THIS OUT!!!
 		}
 		else if (firstWord.equals("return"))
 		{
@@ -423,7 +429,7 @@ public class Compiler
 			Function.returnedOn = lineNumber;
 			System.out.println("[Return] End handling return.");
 		}
-		else if (contains(Types.block, firstWord))
+		else if (existsIn(Types.block, firstWord))
 		{
 			Structure s = null;
 			switch (firstWord)
@@ -921,7 +927,7 @@ public class Compiler
 }
 class Types
 {
-	static String[] primitive = {"int", "int_s", "bool", "byte", "String"};	// String and this are special cases
+	static String[] primitive = {"int", "int_s", "bool", "byte", "char", "String"};	// String and this are special cases
 	static String[] special = {"null", "void"};
 	static String[] defined = {"Window", "Image", "Buffer", "Pointer", "Color"};
 	static String[] modifier = {"linked", "capped", "final", "invis"};
@@ -943,6 +949,7 @@ class SystemCall
 		callList.put("Console.Clear",		"0x0104");
 		callList.put("Dolphin.RegisterWindow",		"0x0200");
 		callList.put("Dolphin.UnregisterWindow",	"0x0201");
+		callList.put("Dolphin.CreateWindow",		"0x0202");
 		callList.put("Debug.Log",		"0x0301");
 		callList.put("Debug.LogHex",	"0x0302");
 		callList.put("Keyboard.AddKeypressHandler",		"0x0401");

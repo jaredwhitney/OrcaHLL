@@ -1,0 +1,23 @@
+classdef Window
+	linked String title
+	linked int_s width
+	linked int_s lastWidth
+	linked int_s height
+	linked int_s lastHeight
+	linked int_s xPos
+	linked int_s lastXpos
+	linked int_s yPos
+	linked int_s lastYpos
+	linked byte type
+	linked byte depth
+	linked int windowBuffer	; should be Buffer or Pointer in the future
+	linked int buffer
+	linked int bufferSize
+	linked int oldBuffer
+	linked byte winNum
+	
+	int TYPE_TEXT = 0;
+	
+	func _dummyFunc (void : null)
+		int y = 0
+	

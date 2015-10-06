@@ -1,0 +1,30 @@
+import "Window"
+classdef HelloWorldWindowProgram
+	
+	int_s type_text = 0
+	
+	func _init (void : null)
+		sys Console.PrintLine("Hello world!")
+		DisplayWindow()
+		int ramPercent = 30;sys GetMemPercent()
+		PrintRamInfo(ramPercent)
+		sys Console.Print("1 + 2 = ")
+		sys Console.PrintHex(AddOneAndTwo())
+		
+	func DisplayWindow (void : null)
+		Window w = sys Dolphin.CreateWindow("Test Window", type_text)
+		String text = "Hello World"
+		w.buffer = text;.RawToWhite()
+		;w.xPos = 10
+	
+	func PrintRamInfo (void : int ramPercent)
+		if ramPercent > 50
+			sys Console.PrintLine("Over half of RAM in use!")
+		if ramPercent <= 50
+			sys Console.PrintLine("Under half of RAM in use!")
+		sys Console.Print("Percentage of RAM in use: ")
+		sys Console.PrintHex(ramPercent)
+		sys Console.Newline("")
+	
+	func AddOneAndTwo (int : null)
+		return 1 + 2

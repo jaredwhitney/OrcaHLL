@@ -1,4 +1,5 @@
 import "Window"
+import "String"
 classdef HelloWorldWindowProgram
 	
 	int_s type_text = 0
@@ -10,11 +11,12 @@ classdef HelloWorldWindowProgram
 		PrintRamInfo(ramPercent)
 		sys Console.Print("1 + 2 = ")
 		sys Console.PrintHex(AddOneAndTwo())
+		sys Console.Newline()
 		
 	func DisplayWindow (void : null)
 		Window w = sys Dolphin.CreateWindow("Test Window", type_text)
 		String text = "Hello World"
-		w.buffer = text;.RawToWhite()
+		w.buffer = text.RawToWhite()
 		;w.xPos = 10
 	
 	func PrintRamInfo (void : int ramPercent)

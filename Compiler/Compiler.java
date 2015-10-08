@@ -509,7 +509,7 @@ public class Compiler
 			System.out.println("Numeric value found: " + firstWord);
 			programCode += "mov ecx, " + firstWord + "\n";
 		}
-		else if (contains(Types.swappable, firstWord))
+		else if (existsIn(Types.swappable, firstWord))
 		{
 			System.out.println("Replace '" + firstWord + "'");
 			programCode += "mov ecx, " + currentClass.classSize + "\n";
@@ -693,6 +693,8 @@ public class Compiler
 		trimArray(args);
 		for (String arg : args)
 		{
+			if (arg.charAt(arg.length()-1)==',')
+				arg = arg.substring(0, arg.length()-1);
 			System.out.println("[ParseArgs] Parsing found arg: '" + arg + "'");
 			parse(arg);
 			programCode += "push ecx\n";

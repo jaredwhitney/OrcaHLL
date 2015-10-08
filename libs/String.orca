@@ -2,24 +2,25 @@ classdef String
 	linked func Append (void : String s)
 		int q = 0
 		char ch = this.GetChar(q)
-		while (c != 0)
+		while ch != 0
 			asm("mov ecx, [ebx]")
 			asm("add ecx, [String.Append.$local.q]")
 			asm("sub ecx, 1")
-			asm("mov byte [ecx], [String.Append.$local.ch]")
+			asm("mov dl, [String.Append.$local.ch]")
+			asm("mov [ecx], dl")
 			q = q + 1
 			ch = this.GetChar(q)
 		asm("mov ecx, [ebx]")
 		asm("mov ecx, [String.Append.$local.q]")
 		asm("sub ecx, 1")
 		asm("mov byte [ecx], 0x0")
-		
+	
 	linked func GetChar (char : int pos)
 		asm("mov ecx, [ebx]")
 		asm("add ecx, [String.GetChar.$local.pos]")
 		asm("mov cl, [ecx]")
 		asm("and ecx, 0xFF")
-		
+	
 	linked func SetChar (void : int pos, char ch)
 		asm("mov ecx, [ebx]")
 		asm("add ecx, [String.SetChar.$local.pos]")
@@ -27,9 +28,22 @@ classdef String
 		asm("mov byte [ecx], al")
 	
 	linked func RawToWhite (void : null)
-		String ret = sys Program.malloc(this.GetLength()*2)
+		String ret = sys Program.Alloc(this.GetLength()*2)
+		int length = this.GetLength()
 		byte white = 0xFF
-		for int z = 0 : z < this.GetLength() : z = z + 1
-			ret.SetChar(z * 2, this.GetChar(z * 2))
+		for int z = 0 : z < length : z = z + 1
+			int offs = z * 2
+			asm(";			k.")
+			char ch = this.GetChar(z * 2)
+			ret.SetChar(z * 2, ch)
 			ret.SetChar(z * 2 + 1, white)
+	
+	linked func GetLength (int : null)
+		int ret = 0
+		char ch = this.GetChar(ret)
+		while ch != 0
+			ret = ret + 1
+			ch = this.GetChar(ret)
+		return ret + 1
+		
 	

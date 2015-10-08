@@ -22,7 +22,7 @@ pop ebx
 mov [String.Append.$local.ch], cl
 String.$loop_while.0_open :
 push edx
-mov ecx, 
+mov cl, [String.Append.$local.ch]
 mov edx, ecx
 mov ecx, 0
 cmp edx, ecx
@@ -34,14 +34,13 @@ String.$comp_4.true :
 mov cl, 0xFF
 String.$comp_4.done :
 
-push ecx
-call String.
 cmp cl, 0xFF
 	jne String.$loop_while.0_end
 mov ecx, [ebx]	; INLINE ASSEMBLY
 add ecx, [String.Append.$local.q]	; INLINE ASSEMBLY
 sub ecx, 1	; INLINE ASSEMBLY
-mov byte [ecx], [String.Append.$local.ch]	; INLINE ASSEMBLY
+mov dl, [String.Append.$local.ch]	; INLINE ASSEMBLY
+mov [ecx], dl	; INLINE ASSEMBLY
 push edx	; Math start
 mov ecx, 1
 mov edx, ecx
@@ -135,39 +134,89 @@ mov ebx, ebx
 call String.GetLength
 pop ebx
 push ecx
-mov ax, null
+mov ax, 0x0501
 int 0x30
 mov [String.RawToWhite.$local.ret], ecx
+push ebx
+mov ebx, ebx
+call String.GetLength
+pop ebx
+mov [String.RawToWhite.$local.length], ecx
 mov ecx, 0xFF
 mov [String.RawToWhite.$local.white], cl
 mov ecx, 0
 mov [String.$loop_for.0.$local.z], ecx
 String.$loop_for.0_open :
+push edx	; Math start
+mov ecx, 2
+mov edx, ecx
+mov ecx, [String.$loop_for.0.$local.z]
+imul ecx, edx
+pop edx	; Math end
+mov [String.$loop_for.0.$local.offs], ecx
+;			k.	; INLINE ASSEMBLY
+push ebx
+mov ebx, ebx
+push edx	; Math start
+mov ecx, 2
+mov edx, ecx
+mov ecx, [String.$loop_for.0.$local.z]
+imul ecx, edx
+pop edx	; Math end
+push ecx
+call String.GetChar
+pop ebx
+mov [String.$loop_for.0.$local.ch], cl
+push ebx
+mov ebx, String.RawToWhite.$local.ret
+push edx	; Math start
+mov ecx, 2
+mov edx, ecx
+mov ecx, [String.$loop_for.0.$local.z]
+imul ecx, edx
+pop edx	; Math end
+push ecx
+mov cl, [String.$loop_for.0.$local.ch]
+push ecx
+call String.SetChar
+pop ebx
 push ebx
 mov ebx, String.RawToWhite.$local.ret
 push edx	; Math start
 push edx	; Math start
 mov ecx, 1
 mov edx, ecx
-mov ecx, 0
+mov ecx, 2
+add ecx, edx
+pop edx	; Math end
+mov edx, ecx
+mov ecx, [String.$loop_for.0.$local.z]
+add ecx, edx
+pop edx	; Math end
+push ecx
+mov cl, [String.RawToWhite.$local.white]
+push ecx
+call String.SetChar
+pop ebx
+push edx	; Math start
+mov ecx, 1
+mov edx, ecx
+mov ecx, [String.$loop_for.0.$local.z]
 add ecx, edx
 pop edx	; Math end
 mov [String.$loop_for.0.$local.z], ecx
 push edx
-mov ecx, 0
+mov ecx, [String.$loop_for.0.$local.z]
 mov edx, ecx
-push ebx
-mov ebx, ebx
-call String.GetLength
-pop ebx
+mov ecx, [String.RawToWhite.$local.length]
 cmp edx, ecx
 pop edx
-jl String.$comp_32.true
+jl String.$comp_40.true
 mov cl, 0x0
-jmp String.$comp_32.done
-String.$comp_32.true :
+jmp String.$comp_40.done
+String.$comp_40.true :
 mov cl, 0xFF
-String.$comp_32.done :
+String.$comp_40.done :
 
 cmp cl, 0xFF
 	je String.$loop_for.0_open
@@ -182,9 +231,81 @@ String.RawToWhite.$local.ret :
 	dd 0x0
 String.RawToWhite.$local.white :
 	db 0x0
+String.RawToWhite.$local.length :
+	dd 0x0
+String.$loop_for.0.$local.offs :
+	dd 0x0
+String.$loop_for.0.$local.ch :
+	db 0x0
 String.$loop_for.0.$local.z :
 	dd 0x0
 String.RawToWhite.returnVal:
+	dd 0x0
+
+
+String.GetLength: 
+pop dword [String.GetLength.returnVal]
+push eax
+push ebx
+push edx
+mov ecx, 0
+mov [String.GetLength.$local.ret], ecx
+push ebx
+mov ebx, ebx
+mov ecx, [String.GetLength.$local.ret]
+push ecx
+call String.GetChar
+pop ebx
+mov [String.GetLength.$local.ch], cl
+String.$loop_while.1_open :
+push edx
+mov cl, [String.GetLength.$local.ch]
+mov edx, ecx
+mov ecx, 0
+cmp edx, ecx
+pop edx
+jne String.$comp_43.true
+mov cl, 0x0
+jmp String.$comp_43.done
+String.$comp_43.true :
+mov cl, 0xFF
+String.$comp_43.done :
+
+cmp cl, 0xFF
+	jne String.$loop_while.1_end
+push edx	; Math start
+mov ecx, 1
+mov edx, ecx
+mov ecx, [String.GetLength.$local.ret]
+add ecx, edx
+pop edx	; Math end
+mov [String.GetLength.$local.ret], ecx
+push ebx
+mov ebx, ebx
+mov ecx, [String.GetLength.$local.ret]
+push ecx
+call String.GetChar
+pop ebx
+mov [String.GetLength.$local.ch], cl
+	jmp String.$loop_while.1_open
+String.$loop_while.1_end :
+push edx	; Math start
+mov ecx, 1
+mov edx, ecx
+mov ecx, [String.GetLength.$local.ret]
+add ecx, edx
+pop edx	; Math end
+pop edx
+pop ebx
+pop eax
+push dword [String.GetLength.returnVal]
+ret
+	;Vars:
+String.GetLength.$local.ret :
+	dd 0x0
+String.GetLength.$local.ch :
+	db 0x0
+String.GetLength.returnVal:
 	dd 0x0
 
 

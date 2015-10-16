@@ -1,0 +1,343 @@
+Attempt to load lib 'Window'
+	Search for lib in: 'C:\Users\Jared\Desktop\GitHub\OrcaHLL\Compiler\.' [true]
+	Search for lib in: 'C:\Users\Jared\Desktop\GitHub\OrcaHLL\Compiler\..\libs' [true]
+		Loading lib from: 'C:\Users\Jared\Desktop\GitHub\OrcaHLL\Compiler\..\libs\Window.asm'
+[Library] Load lib: 'Window'
+Record linked var 'winNum'
+Record linked var 'yPos'
+Record linked var 'windowBuffer'
+Record linked var 'xPos'
+Record linked var 'title'
+Record linked var 'type'
+Record linked var 'depth'
+Record linked var 'lastYpos'
+Record linked var 'lastXpos'
+Record linked var 'width'
+Record linked var 'lastWidth'
+Record linked var 'buffer'
+Record linked var 'lastHeight'
+Record linked var 'oldBuffer'
+Record linked var 'height'
+Record linked var 'bufferSize'
+Attempt to load lib 'String'
+	Search for lib in: 'C:\Users\Jared\Desktop\GitHub\OrcaHLL\Compiler\.' [true]
+	Search for lib in: 'C:\Users\Jared\Desktop\GitHub\OrcaHLL\Compiler\..\libs' [true]
+		Loading lib from: 'C:\Users\Jared\Desktop\GitHub\OrcaHLL\Compiler\..\libs\String.asm'
+[Library] Load lib: 'String'
+first: 
+OVardec: int_s type_text = 0
+Check linked processing...
+HelloWorldWindowProgram size:: 0
+[MakeFunc] make function: _init
+[MakeFunc] Found dec part: 'func _init (void :'
+[MakeFunc] Found dec part: ' null)'
+[MakeFunc] On level_2
+[MakeFunc] Added 'Function'
+[parse] sys Console.PrintLine("Hello world!")
+Syscall in ' Console.PrintLine("Hello world!")'
+[parse] Console.PrintLine("Hello world!")
+	Syscall 'Console.PrintLine'
+[ParseArgs] Handed String 'Console.PrintLine("Hello world!")'
+[ParseArgs] All args should appear in: '"Hello world!"'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: '"Hello world!"'
+[parse] "Hello world!"
+'"Hello world!"' contains a String!
+[MakeString] Handed '"Hello world!"'
+		int 0x30 ax = 0x0101
+[parse] DisplayWindow()
+	Call to func 'DisplayWindow'
+[ParseArgs] Handed String 'DisplayWindow()'
+[ParseArgs] All args should appear in: ''
+[ParseArgs] No arguments found.
+[CallFunc] Called function 'HelloWorldWindowProgram.DisplayWindow'
+[parse] int ramPercent = 30
+Kgetvardec int
+[MakeVar] Handed 'int ramPercent = 30'
+Create var 'ramPercent'
+'HelloWorldWindowProgram._init' now knows var 'ramPercent'
+Parsing things after the '='...
+[parse] 30
+Numeric value found: 30
+Returned.
+[GetVar] Handed 'ramPercent'
+'ramPercent'
+'HelloWorldWindowProgram._init.$local.ramPercent' is a var. (I think...)
+[parse] PrintRamInfo(ramPercent)
+	Call to func 'PrintRamInfo'
+[ParseArgs] Handed String 'PrintRamInfo(ramPercent)'
+[ParseArgs] All args should appear in: 'ramPercent'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: 'ramPercent'
+[parse] ramPercent
+Assuming that 'ramPercent' is a variable for now.
+[GetVar] Handed 'ramPercent'
+[CallFunc] Called function 'HelloWorldWindowProgram.PrintRamInfo'
+[parse] sys Console.Print("1 + 2 = ")
+Syscall in ' Console.Print("1 + 2 = ")'
+[parse] Console.Print("1 + 2 = ")
+	Syscall 'Console.Print'
+[ParseArgs] Handed String 'Console.Print("1 + 2 = ")'
+[ParseArgs] All args should appear in: '"1 + 2 = "'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: '"1 + 2 = "'
+[parse] "1 + 2 = "
+'"1 + 2 = "' contains a String!
+[MakeString] Handed '"1 + 2 = "'
+		int 0x30 ax = 0x0100
+[parse] sys Console.PrintHex(AddOneAndTwo())
+Syscall in ' Console.PrintHex(AddOneAndTwo())'
+[parse] Console.PrintHex(AddOneAndTwo())
+	Syscall 'Console.PrintHex'
+[ParseArgs] Handed String 'Console.PrintHex(AddOneAndTwo())'
+[ParseArgs] All args should appear in: 'AddOneAndTwo()'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: 'AddOneAndTwo()'
+[parse] AddOneAndTwo()
+	Call to func 'AddOneAndTwo'
+[ParseArgs] Handed String 'AddOneAndTwo()'
+[ParseArgs] All args should appear in: ''
+[ParseArgs] No arguments found.
+[CallFunc] Called function 'HelloWorldWindowProgram.AddOneAndTwo'
+		int 0x30 ax = 0x0102
+[parse] sys Console.Newline()
+Syscall in ' Console.Newline()'
+[parse] Console.Newline()
+	Syscall 'Console.Newline'
+[ParseArgs] Handed String 'Console.Newline()'
+[ParseArgs] All args should appear in: ''
+[ParseArgs] No arguments found.
+		int 0x30 ax = 0x0103
+[CloseLevel] Closing on func DisplayWindow (void : null)
+[MakeFunc] make function: DisplayWindow
+[MakeFunc] Found dec part: 'func DisplayWindow (void :'
+[MakeFunc] Found dec part: ' null)'
+[MakeFunc] On level_2
+[MakeFunc] Added 'Function'
+[parse] Window w = sys Dolphin.CreateWindow("Test Window", type_text)
+Kgetvardec Window
+[MakeVar] Handed 'Window w = sys Dolphin.CreateWindow("Test Window", type_text)'
+Create var 'w'
+'HelloWorldWindowProgram.DisplayWindow' now knows var 'w'
+Parsing things after the '='...
+[parse] sys Dolphin.CreateWindow("Test Window", type_text)
+Syscall in ' Dolphin.CreateWindow("Test Window", type_text)'
+[parse] Dolphin.CreateWindow("Test Window", type_text)
+	Syscall 'Dolphin.CreateWindow'
+[ParseArgs] Handed String 'Dolphin.CreateWindow("Test Window", type_text)'
+[ParseArgs] All args should appear in: '"Test Window", type_text'
+[ParseArgs] Found 2 args
+[ParseArgs] Parsing found arg: '"Test Window"'
+[parse] "Test Window"
+'"Test Window"' contains a String!
+[MakeString] Handed '"Test Window"'
+[ParseArgs] Parsing found arg: 'type_text'
+[parse] type_text
+Assuming that 'type_text' is a variable for now.
+[GetVar] Handed 'type_text'
+		int 0x30 ax = 0x0202
+Returned.
+[GetVar] Handed 'w'
+'w'
+'HelloWorldWindowProgram.DisplayWindow.$local.w' is a var. (I think...)
+[parse] String text = "Txhxixsx xixsx xax xtxexsxtx.x"
+Kgetvardec String
+[MakeVar] Handed 'String text = "Txhxixsx xixsx xax xtxexsxtx.x"'
+Create var 'text'
+'HelloWorldWindowProgram.DisplayWindow' now knows var 'text'
+Parsing things after the '='...
+[parse] "Txhxixsx xixsx xax xtxexsxtx.x"
+'"Txhxixsx xixsx xax xtxexsxtx.x"' contains a String!
+[MakeString] Handed '"Txhxixsx xixsx xax xtxexsxtx.x"'
+Returned.
+[GetVar] Handed 'text'
+'text'
+'HelloWorldWindowProgram.DisplayWindow.$local.text' is a var. (I think...)
+[parse] w.buffer.Append(text)
+	Call to func 'w.buffer.Append'
+[GetVar] Handed 'w'
+Woah! 'w.buffer.Append' is a linked function :o
+	Var is 'w.buffer'
+[GetVar] Handed 'w.buffer'
+[GetVar] Handed 'w'
+	isMainVar: w
+		Type: Window
+[GetVar] Handed 'buffer'
+subvar to grab is 'buffer' (int) [Window.buffer]
+Calling 'Window.buffer.Append' on var 'eax'
+[ParseArgs] Handed String 'w.buffer.Append(text)'
+[ParseArgs] All args should appear in: 'text'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: 'text'
+[parse] text
+Assuming that 'text' is a variable for now.
+[GetVar] Handed 'text'
+[CallFunc] Called function 'Window.buffer.Append'
+[parse] sys Console.PrintHex(w)
+Syscall in ' Console.PrintHex(w)'
+[parse] Console.PrintHex(w)
+	Syscall 'Console.PrintHex'
+[ParseArgs] Handed String 'Console.PrintHex(w)'
+[ParseArgs] All args should appear in: 'w'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: 'w'
+[parse] w
+Assuming that 'w' is a variable for now.
+[GetVar] Handed 'w'
+		int 0x30 ax = 0x0102
+[parse] sys Console.Newline()
+Syscall in ' Console.Newline()'
+[parse] Console.Newline()
+	Syscall 'Console.Newline'
+[ParseArgs] Handed String 'Console.Newline()'
+[ParseArgs] All args should appear in: ''
+[ParseArgs] No arguments found.
+		int 0x30 ax = 0x0103
+[parse] sys Console.PrintHex(w.buffer)
+Syscall in ' Console.PrintHex(w.buffer)'
+[parse] Console.PrintHex(w.buffer)
+	Syscall 'Console.PrintHex'
+[ParseArgs] Handed String 'Console.PrintHex(w.buffer)'
+[ParseArgs] All args should appear in: 'w.buffer'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: 'w.buffer'
+[parse] w.buffer
+Assuming that 'w.buffer' is a variable for now.
+[GetVar] Handed 'w.buffer'
+[GetVar] Handed 'w'
+	isMainVar: w
+		Type: Window
+[GetVar] Handed 'buffer'
+subvar to grab is 'buffer' (int) [Window.buffer]
+		int 0x30 ax = 0x0102
+[parse] sys Console.Newline()
+Syscall in ' Console.Newline()'
+[parse] Console.Newline()
+	Syscall 'Console.Newline'
+[ParseArgs] Handed String 'Console.Newline()'
+[ParseArgs] All args should appear in: ''
+[ParseArgs] No arguments found.
+		int 0x30 ax = 0x0103
+[parse] sys Console.PrintHex(asm("mov ecx, [ecx]"))
+Syscall in ' Console.PrintHex(asm("mov ecx, [ecx]"))'
+[parse] Console.PrintHex(asm("mov ecx, [ecx]"))
+	Syscall 'Console.PrintHex'
+[ParseArgs] Handed String 'Console.PrintHex(asm("mov ecx, [ecx]"))'
+[ParseArgs] All args should appear in: 'asm("mov ecx, [ecx]")'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: 'asm("mov ecx, [ecx]")'
+[parse] asm("mov ecx, [ecx]")
+	Call to func 'asm'
+	<asm> 'mov ecx, [ecx]'
+		int 0x30 ax = 0x0102
+[parse] sys Console.Newline()
+Syscall in ' Console.Newline()'
+[parse] Console.Newline()
+	Syscall 'Console.Newline'
+[ParseArgs] Handed String 'Console.Newline()'
+[ParseArgs] All args should appear in: ''
+[ParseArgs] No arguments found.
+		int 0x30 ax = 0x0103
+[CloseLevel] Closing on func PrintRamInfo (void : int ramPercent)
+[MakeFunc] make function: PrintRamInfo
+[MakeFunc] Found dec part: 'func PrintRamInfo (void :'
+[MakeFunc] Found dec part: ' int ramPercent)'
+[MakeVar] Handed 'int ramPercent'
+Create var 'ramPercent'
+'HelloWorldWindowProgram.PrintRamInfo' now knows var 'ramPercent'
+[MakeFunc] On level_2
+[MakeFunc] Added 'Function'
+[parse] if ramPercent > 50
+[parse] ramPercent > 50
+[Compare] 'ramPercent > 50'
+[parse] ramPercent
+Assuming that 'ramPercent' is a variable for now.
+[GetVar] Handed 'ramPercent'
+[parse] 50
+Numeric value found: 50
+[parse] sys Console.PrintLine("Over half of RAM in use!")
+Syscall in ' Console.PrintLine("Over half of RAM in use!")'
+[parse] Console.PrintLine("Over half of RAM in use!")
+	Syscall 'Console.PrintLine'
+[ParseArgs] Handed String 'Console.PrintLine("Over half of RAM in use!")'
+[ParseArgs] All args should appear in: '"Over half of RAM in use!"'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: '"Over half of RAM in use!"'
+[parse] "Over half of RAM in use!"
+'"Over half of RAM in use!"' contains a String!
+[MakeString] Handed '"Over half of RAM in use!"'
+		int 0x30 ax = 0x0101
+[CloseLevel] Closing on if ramPercent <= 50
+[parse] if ramPercent <= 50
+[parse] ramPercent <= 50
+[Compare] 'ramPercent <= 50'
+[parse] ramPercent
+Assuming that 'ramPercent' is a variable for now.
+[GetVar] Handed 'ramPercent'
+[parse] 50
+Numeric value found: 50
+[parse] sys Console.PrintLine("Under half of RAM in use!")
+Syscall in ' Console.PrintLine("Under half of RAM in use!")'
+[parse] Console.PrintLine("Under half of RAM in use!")
+	Syscall 'Console.PrintLine'
+[ParseArgs] Handed String 'Console.PrintLine("Under half of RAM in use!")'
+[ParseArgs] All args should appear in: '"Under half of RAM in use!"'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: '"Under half of RAM in use!"'
+[parse] "Under half of RAM in use!"
+'"Under half of RAM in use!"' contains a String!
+[MakeString] Handed '"Under half of RAM in use!"'
+		int 0x30 ax = 0x0101
+[CloseLevel] Closing on sys Console.Print("Percentage of RAM in use: ")
+[parse] sys Console.Print("Percentage of RAM in use: ")
+Syscall in ' Console.Print("Percentage of RAM in use: ")'
+[parse] Console.Print("Percentage of RAM in use: ")
+	Syscall 'Console.Print'
+[ParseArgs] Handed String 'Console.Print("Percentage of RAM in use: ")'
+[ParseArgs] All args should appear in: '"Percentage of RAM in use: "'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: '"Percentage of RAM in use: "'
+[parse] "Percentage of RAM in use: "
+'"Percentage of RAM in use: "' contains a String!
+[MakeString] Handed '"Percentage of RAM in use: "'
+		int 0x30 ax = 0x0100
+[parse] sys Console.PrintHex(ramPercent)
+Syscall in ' Console.PrintHex(ramPercent)'
+[parse] Console.PrintHex(ramPercent)
+	Syscall 'Console.PrintHex'
+[ParseArgs] Handed String 'Console.PrintHex(ramPercent)'
+[ParseArgs] All args should appear in: 'ramPercent'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: 'ramPercent'
+[parse] ramPercent
+Assuming that 'ramPercent' is a variable for now.
+[GetVar] Handed 'ramPercent'
+		int 0x30 ax = 0x0102
+[parse] sys Console.Newline("")
+Syscall in ' Console.Newline("")'
+[parse] Console.Newline("")
+	Syscall 'Console.Newline'
+[ParseArgs] Handed String 'Console.Newline("")'
+[ParseArgs] All args should appear in: '""'
+[ParseArgs] Found 1 args
+[ParseArgs] Parsing found arg: '""'
+[parse] ""
+'""' contains a String!
+[MakeString] Handed '""'
+		int 0x30 ax = 0x0103
+[CloseLevel] Closing on func AddOneAndTwo (int : null)
+[MakeFunc] make function: AddOneAndTwo
+[MakeFunc] Found dec part: 'func AddOneAndTwo (int :'
+[MakeFunc] Found dec part: ' null)'
+[MakeFunc] On level_2
+[MakeFunc] Added 'Function'
+[parse] return 1 + 2
+[Return] Begin handling return.
+[parse] 1 + 2
+MATH THINGS! : '1 + 2'
+[parse] 2
+Numeric value found: 2
+[parse] 1
+Numeric value found: 1
+[Return] End handling return.
+writing varList to: C:\Users\Jared\Desktop\GitHub\OrcaHLL\Compiler\..\toos\hwin.varlist

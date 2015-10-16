@@ -1146,7 +1146,9 @@ class Function extends Structure
 			for (String p : params)
 			{
 				p = p.substring(0, p.length()-1);
-				OVar v = Compiler.createVar(Compiler.smartSplit(p, ' '), p);
+				String[] pmods = Compiler.smartSplit(p, ' ');
+				Compiler.trimArray(pmods);
+				OVar v = Compiler.createVar(pmods, p);
 				this.params.add(v);
 			}
 		RETURN_CODE = "pop edx\npop ebx\npop eax\npush dword [" + Compiler.currentClass.name + "." + name + ".returnVal]\nret\n";

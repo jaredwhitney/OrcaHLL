@@ -15,9 +15,39 @@ classdef HelloWorldWindowProgram
 		
 	func DisplayWindow (void : null)
 		Window w = sys Dolphin.CreateWindow("Test Window", type_text)
-		String text = "Hello World"
-		w.buffer = text.RawToWhite()
+		String text = "Txhxixsx xixsx xax xtxexsxtx.x"
+		;sys Console.PrintLine(text.RawToWhite())
+		w.xPos = 20
+		PrintBufferInfo()
+		w.buffer = text
+		PrintBufferInfo()
+		;asm("mov ecx, [ecx]")
+		;asm("mov byte [ecx], 'H'")
+		;asm("add ecx, 1")
+		;asm("mov byte [ecx], 0xFF")
+		;asm("add ecx, 1")
+		;asm("mov byte [ecx], 'I'")
+		;asm("add ecx, 1")
+		;asm("mov byte [ecx], 0xFF")
+		;asm("add ecx, 1")
+		;sys Console.PrintHex(w)
+		;sys Console.Newline()
+		;sys Console.PrintHex(w.buffer); = text;.RawToWhite()
+		;sys Console.Newline()
+		;sys Console.PrintHex(asm("mov ecx, [ecx]"))
+		;sys Console.Newline()
 		;w.xPos = 10
+	
+	func PrintBufferInfo (void : Window w)
+		sys Console.Print("w.buffer: ")
+		sys Console.PrintHex(w.buffer)
+		sys Console.Newline()
+		sys Console.Print("[w.buffer]: ")
+		w.buffer
+		asm("mov ecx, [ecx]")
+		asm("push ecx")
+		sys Console.PrintHex()
+		sys Console.Newline()
 	
 	func PrintRamInfo (void : int ramPercent)
 		if ramPercent > 50

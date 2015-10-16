@@ -1,0 +1,8 @@
+classdef Book
+	linked String title
+	linked int pages
+	func Create (Book : String title)
+		Book ret = sys Program.Alloc($LinkedClassSize)
+		ret.pages = 0x10
+		ret.title = title
+		return ret

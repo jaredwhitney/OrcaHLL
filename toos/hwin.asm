@@ -66,10 +66,16 @@ int 0x30
 mov [HelloWorldWindowProgram.DisplayWindow.$local.w], ecx
 mov ecx, [HelloWorldWindowProgram.DisplayWindow.string_1]
 mov [HelloWorldWindowProgram.DisplayWindow.$local.text], ecx
-push ebx
-mov ebx, HelloWorldWindowProgram.DisplayWindow.$local.text
-call String.RawToWhite
-pop ebx
+mov ecx, 20
+push edx	; Begin getting subvar
+mov edx, [HelloWorldWindowProgram.DisplayWindow.$local.w]
+add dl, Window.xPos
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov [eax], ecx
+call HelloWorldWindowProgram.PrintBufferInfo
+mov ecx, [HelloWorldWindowProgram.DisplayWindow.$local.text]
 push edx	; Begin getting subvar
 mov edx, [HelloWorldWindowProgram.DisplayWindow.$local.w]
 add dl, Window.buffer
@@ -77,6 +83,7 @@ mov eax, edx
 mov edx, [edx]
 pop edx	; End getting subvar
 mov [eax], ecx
+call HelloWorldWindowProgram.PrintBufferInfo
 pop edx
 pop ebx
 pop eax
@@ -85,17 +92,76 @@ ret
 	;Vars:
 HelloWorldWindowProgram.DisplayWindow.string_0_data :
 	db "Test Window", 0
-HelloWorldWindowProgram.DisplayWindow.string_1 :
-	dd HelloWorldWindowProgram.DisplayWindow.string_1_data
 HelloWorldWindowProgram.DisplayWindow.string_1_data :
-	db "Hello World", 0
+	db "Txhxixsx xixsx xax xtxexsxtx.x", 0
 HelloWorldWindowProgram.DisplayWindow.$local.w :
 	dd 0x0
+HelloWorldWindowProgram.DisplayWindow.string_1 :
+	dd HelloWorldWindowProgram.DisplayWindow.string_1_data
 HelloWorldWindowProgram.DisplayWindow.$local.text :
 	dd 0x0
 HelloWorldWindowProgram.DisplayWindow.string_0 :
 	dd HelloWorldWindowProgram.DisplayWindow.string_0_data
 HelloWorldWindowProgram.DisplayWindow.returnVal:
+	dd 0x0
+
+
+HelloWorldWindowProgram.PrintBufferInfo: 
+pop dword [HelloWorldWindowProgram.PrintBufferInfo.returnVal]
+pop dword [HelloWorldWindowProgram.PrintBufferInfo.$local.w]
+push eax
+push ebx
+push edx
+mov ecx, [HelloWorldWindowProgram.PrintBufferInfo.string_0]
+push ecx
+mov ax, 0x0100
+int 0x30
+push edx	; Begin getting subvar
+mov edx, [HelloWorldWindowProgram.PrintBufferInfo.$local.w]
+add dl, Window.buffer
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov ecx, [eax]
+push ecx
+mov ax, 0x0102
+int 0x30
+mov ax, 0x0103
+int 0x30
+mov ecx, [HelloWorldWindowProgram.PrintBufferInfo.string_1]
+push ecx
+mov ax, 0x0100
+int 0x30
+push edx	; Begin getting subvar
+mov edx, [HelloWorldWindowProgram.PrintBufferInfo.$local.w]
+add dl, Window.buffer
+mov eax, edx
+mov edx, [edx]
+pop edx	; End getting subvar
+mov ecx, [eax]
+mov ecx, [ecx]	; INLINE ASSEMBLY
+push ecx	; INLINE ASSEMBLY
+mov ax, 0x0102
+int 0x30
+mov ax, 0x0103
+int 0x30
+pop edx
+pop ebx
+pop eax
+push dword [HelloWorldWindowProgram.PrintBufferInfo.returnVal]
+ret
+	;Vars:
+HelloWorldWindowProgram.PrintBufferInfo.string_0 :
+	dd HelloWorldWindowProgram.PrintBufferInfo.string_0_data
+HelloWorldWindowProgram.PrintBufferInfo.$local.w :
+	dd 0x0
+HelloWorldWindowProgram.PrintBufferInfo.string_0_data :
+	db "w.buffer: ", 0
+HelloWorldWindowProgram.PrintBufferInfo.string_1 :
+	dd HelloWorldWindowProgram.PrintBufferInfo.string_1_data
+HelloWorldWindowProgram.PrintBufferInfo.string_1_data :
+	db "[w.buffer]: ", 0
+HelloWorldWindowProgram.PrintBufferInfo.returnVal:
 	dd 0x0
 
 
@@ -111,12 +177,12 @@ mov edx, ecx
 mov ecx, 50
 cmp edx, ecx
 pop edx
-jg HelloWorldWindowProgram.$comp_19.true
+jg HelloWorldWindowProgram.$comp_49.true
 mov cl, 0x0
-jmp HelloWorldWindowProgram.$comp_19.done
-HelloWorldWindowProgram.$comp_19.true :
+jmp HelloWorldWindowProgram.$comp_49.done
+HelloWorldWindowProgram.$comp_49.true :
 mov cl, 0xFF
-HelloWorldWindowProgram.$comp_19.done :
+HelloWorldWindowProgram.$comp_49.done :
 
 cmp cl, 0xFF
 	jne HelloWorldWindowProgram.$loop_if.0_close
@@ -132,12 +198,12 @@ mov edx, ecx
 mov ecx, 50
 cmp edx, ecx
 pop edx
-jle HelloWorldWindowProgram.$comp_21.true
+jle HelloWorldWindowProgram.$comp_51.true
 mov cl, 0x0
-jmp HelloWorldWindowProgram.$comp_21.done
-HelloWorldWindowProgram.$comp_21.true :
+jmp HelloWorldWindowProgram.$comp_51.done
+HelloWorldWindowProgram.$comp_51.true :
 mov cl, 0xFF
-HelloWorldWindowProgram.$comp_21.done :
+HelloWorldWindowProgram.$comp_51.done :
 
 cmp cl, 0xFF
 	jne HelloWorldWindowProgram.$loop_if.1_close

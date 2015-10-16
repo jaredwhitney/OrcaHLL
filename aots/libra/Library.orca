@@ -1,0 +1,19 @@
+import "Book"
+classdef Library
+	func _init (void : null)
+		Book one = Book.Create("A Midsummer Night's Dream")
+		Book two = Book.Create("Beowulf")
+		sys Console.Newline()
+		sys Console.Print("Book one's title is: ")
+		sys Console.PrintLine(one.title)
+		one.title = "Othello"
+		sys Console.Print("Book one's new title is: ")
+		sys Console.PrintLine(one.title)
+		sys Console.Print("Pages in book one: ")
+		sys Console.PrintHex(one.pages)
+		sys Console.PrintLine()
+		two.pages = 0x57
+		sys Console.Print("Pages in book two: ")
+		sys Console.PrintHex(two.pages)
+		sys Console.PrintLine()
+

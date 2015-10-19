@@ -949,27 +949,29 @@ class SystemCall
 		callList.put("Console.PrintHex",	"0x0102");
 		callList.put("Console.Newline",		"0x0103");
 		callList.put("Console.Clear",		"0x0104");
-		callList.put("Dolphin.RegisterWindow",		"0x0200");
-		callList.put("Dolphin.UnregisterWindow",	"0x0201");
+		callList.put("Dolphin.RegisterWindow",		"0x0200");	// unimplemented
+		callList.put("Dolphin.UnregisterWindow",	"0x0201");	// unimplemented
 		callList.put("Dolphin.CreateWindow",		"0x0202");
-		callList.put("Debug.Log",		"0x0301");
-		callList.put("Debug.LogHex",	"0x0302");
-		callList.put("Keyboard.AddKeypressHandler",		"0x0401");
-		callList.put("Keyboard.RemoveKeypressHandler",	"0x0402");
-		callList.put("Keyboard.IsKeyPressed",			"0x0403");
-		callList.put("Program.Exit",	"0x0500");
+		callList.put("Debug.Log",		"0x0301");	// unimplemented
+		callList.put("Debug.LogHex",	"0x0302");	// unimplemented
+		callList.put("Keyboard.AddKeypressHandler",		"0x0401");	// unimplemented
+		callList.put("Keyboard.RemoveKeypressHandler",	"0x0402");	// unimplemented
+		callList.put("Keyboard.IsKeyPressed",			"0x0403");	// unimplemented
+		callList.put("Keyboard.HasEvent",				"0x0404");
+		callList.put("Keyboard.TakeEvent",				"0x0405");
+		callList.put("Program.Exit",	"0x0500");	// unimplemented
 		callList.put("Program.Alloc",	"0x0501");
 		callList.put("Program.Ealloc",	"0x0502");
-		callList.put("Mouse.GetX",						"0x0600");
-		callList.put("Mouse.GetY",						"0x0601");
-		callList.put("Mouse.IsButtonPressed",			"0x0602");
-		callList.put("Mouse.AddButtonpressListener",	"0x0603");
-		callList.put("Mouse.RemoveButtonpressListener",	"0x0604");
-		callList.put("Time.GetSecond",	"0x0701");
-		callList.put("Time.GetMinute",	"0x0702");
-		callList.put("Time.GetHour",	"0x0703");
-		callList.put("Time.GetYear",	"0x0704");
-		callList.put("Minnow.Open",	"0x0801");
+		callList.put("Mouse.GetX",						"0x0600");	// unimplemented
+		callList.put("Mouse.GetY",						"0x0601");	// unimplemented
+		callList.put("Mouse.IsButtonPressed",			"0x0602");	// unimplemented
+		callList.put("Mouse.AddButtonpressListener",	"0x0603");	// unimplemented
+		callList.put("Mouse.RemoveButtonpressListener",	"0x0604");	// unimplemented
+		callList.put("Time.GetSecond",	"0x0701");	// unimplemented
+		callList.put("Time.GetMinute",	"0x0702");	// unimplemented
+		callList.put("Time.GetHour",	"0x0703");	// unimplemented
+		callList.put("Time.GetYear",	"0x0704");	// unimplemented
+		callList.put("Minnow.Open",	"0x0801");	// unimplemented
 		inited = true;
 	}
 	public static String lookup(String commonName)

@@ -1,0 +1,28 @@
+classdef EchoTest
+	String text
+	func _init (void : null)
+		text = sys Program.Alloc(80)
+		sys Console.Print(":: ")
+	func _loop (void : null)
+		if sys Keyboard.HasEvent()
+			char c = sys Keyboard.takeEvent()
+			text.AppendChar(c)
+			if c == 0xFE
+				sys Console.Print(text)
+; wow Strings are hard...
+; anyways
+
+; Declare Program
+;
+;  Declare a global String (text)
+;
+;  Initiation
+;   Allocate some space for the String
+;   Prompt the user
+;
+;  Loop
+;   Check to see if a key has been pressed
+;   If it has save it in a char
+;   Append it to the global String
+;   If the char was ENTER
+;   Print out the String

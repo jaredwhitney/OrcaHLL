@@ -26,6 +26,12 @@ classdef String
 		asm("add ecx, [String.SetChar.$local.pos]")
 		asm("mov al, [String.SetChar.$local.ch]")
 		asm("mov byte [ecx], al")
+		
+	linked func AppendChar(void : char ch)
+		int length = this.GetLength()
+		char blank = 0
+		this.SetChar(length, ch)
+		this.SetChar(length+1, blank)
 	
 	linked func RawToWhite (void : null)
 		String ret = sys Program.Alloc(this.GetLength()*2)

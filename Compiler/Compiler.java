@@ -521,9 +521,21 @@ public class Compiler
 		}
 		else
 		{
+			boolean forceref = false;
 			System.out.println("Assuming that '" + inp + "' is a variable for now.");
+			if (firstWord.charAt(0)=='@')
+			{
+				System.out.println("isptr!");
+				forceref = true;
+				firstWord = firstWord.substring(1, firstWord.length());
+			}
+			
 			OVar v = getVar(firstWord);
+			if (!v.getECXform().equals("ecx"))
+				programCode += "xor ecx, ecx\n";
 			programCode += "mov " + v.getECXform() + ", [" + v.asmName + "]\n";
+			if (forceref)
+				programCode += "mov ecx, [ecx]\t; ptr\n";
 		}
 	}
 	public static boolean isVar(String commonName)
@@ -949,6 +961,7 @@ class SystemCall
 		callList.put("Console.PrintHex",	"0x0102");
 		callList.put("Console.Newline",		"0x0103");
 		callList.put("Console.Clear",		"0x0104");
+		callList.put("Console.PrintChar",	"0x0105");
 		callList.put("Dolphin.RegisterWindow",		"0x0200");	// unimplemented
 		callList.put("Dolphin.UnregisterWindow",	"0x0201");	// unimplemented
 		callList.put("Dolphin.CreateWindow",		"0x0202");
@@ -1166,7 +1179,8 @@ class Function extends Structure
 				sizeSpec = "byte";
 			else if (v.refSize == 2)
 				sizeSpec = "word";
-			Compiler.programCode += "pop " + sizeSpec + " [" + v.asmName + "]\n";
+			Compiler.programCode += "pop ecx\n";
+			Compiler.programCode += "mov [" + v.asmName + "], " + v.getECXform() + "\n";
 		}
 		Compiler.programCode += "push eax\npush ebx\npush edx\n";
 		Compiler.currentFunction = this;

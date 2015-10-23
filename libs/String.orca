@@ -27,7 +27,7 @@ classdef String
 		asm("mov al, [String.SetChar.$local.ch]")
 		asm("mov byte [ecx], al")
 		
-	linked func AppendChar(void : char ch)
+	linked func AppendChar (void : char ch)
 		int length = this.GetLength()
 		char blank = 0
 		this.SetChar(length, ch)

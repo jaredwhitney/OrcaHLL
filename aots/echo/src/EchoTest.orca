@@ -1,14 +1,20 @@
+import "String"
 classdef EchoTest
 	String text
+	char nul = 0
 	func _init (void : null)
-		text = sys Program.Alloc(80)
+		text = sys Program.Ealloc(80)
 		sys Console.Print(":: ")
 	func _loop (void : null)
-		if sys Keyboard.HasEvent()
-			char c = sys Keyboard.takeEvent()
-			text.AppendChar(c)
-			if c == 0xFE
-				sys Console.Print(text)
+		if sys Keyboard.HasEvent()	; MAKES THE OS FREEZE
+			char ch = sys Keyboard.TakeEvent(asm("mov ecx, [console.windowStructLoc]"))
+			text.Append("x")
+			if ch == 0xFE
+				sys Console.Newline()
+				sys Console.PrintHex(@text)
+				sys Console.Newline()
+				text.SetChar(0, nul)
+			sys Console.PrintChar(ch)
 ; wow Strings are hard...
 ; anyways
 
@@ -24,5 +30,6 @@ classdef EchoTest
 ;   Check to see if a key has been pressed
 ;   If it has save it in a char
 ;   Append it to the global String
+;	Print out the character so the user can see what they're typing
 ;   If the char was ENTER
 ;   Print out the String

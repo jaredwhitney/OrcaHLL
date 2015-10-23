@@ -1,5 +1,78 @@
 [bits 32]
 
+dd EchoTest.$FILE_END - EchoTest.$FILE_START
+db "OrcaHLL Class", 0
+db "EchoTest", 0
+EchoTest.$FILE_START :
+
+EchoTest.$global.nul :
+	db 0x0
+EchoTest.$global.text :
+	dd 0x0
+EchoTest._init: 
+pop dword [EchoTest._init.returnVal]
+push eax
+push ebx
+push edx
+mov ecx, 80
+push ecx
+mov ax, 0x0502
+int 0x30
+mov [EchoTest.$global.text], ecx
+mov ecx, [EchoTest._init.string_0]
+push ecx
+mov ax, 0x0100
+int 0x30
+pop edx
+pop ebx
+pop eax
+push dword [EchoTest._init.returnVal]
+ret
+	;Vars:
+EchoTest._init.string_0_data :
+	db ":: ", 0
+EchoTest._init.string_0 :
+	dd EchoTest._init.string_0_data
+EchoTest._init.returnVal:
+	dd 0x0
+
+
+EchoTest._loop: 
+pop dword [EchoTest._loop.returnVal]
+push eax
+push ebx
+push edx
+mov ax, 0x0404
+int 0x30
+cmp cl, 0xFF
+	jne EchoTest.$loop_if.0_close
+mov ecx, [console.windowStructLoc]	; INLINE ASSEMBLY
+push ecx
+mov ax, 0x0405
+int 0x30
+mov [EchoTest.$loop_if.0.$local.ch], cl
+mov ecx, [EchoTest.$loop_if.0.string_0]
+EchoTest.$loop_if.0_close :
+
+pop edx
+pop ebx
+pop eax
+push dword [EchoTest._loop.returnVal]
+ret
+	;Vars:
+EchoTest.$loop_if.0.string_0 :
+	dd EchoTest.$loop_if.0.string_0_data
+EchoTest.$loop_if.0.string_0_data :
+	db "Hello", 0
+EchoTest.$loop_if.0.$local.ch :
+	db 0x0
+EchoTest._loop.returnVal:
+	dd 0x0
+
+
+EchoTest.$FILE_END :
+; *** LIB IMPORT 'String' ***
+[bits 32]
 dd String.$FILE_END - String.$FILE_START
 db "OrcaHLL Class", 0
 db "String", 0
@@ -365,4 +438,6 @@ String.GetLength.returnVal:
 
 
 String.$FILE_END :
+
+
 

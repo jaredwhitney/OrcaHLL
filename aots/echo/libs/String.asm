@@ -23,6 +23,7 @@ pop ebx
 mov [String.Append.$local.ch], cl
 String.$loop_while.0_open :
 push edx
+xor ecx, ecx
 mov cl, [String.Append.$local.ch]
 mov edx, ecx
 mov ecx, 0
@@ -37,7 +38,7 @@ String.$comp_4.done :
 
 cmp cl, 0xFF
 	jne String.$loop_while.0_end
-mov ecx, [ebx]	; INLINE ASSEMBLY
+mov ecx, [ebx]
 add ecx, [String.Append.$local.q]	; INLINE ASSEMBLY
 sub ecx, 1	; INLINE ASSEMBLY
 mov dl, [String.Append.$local.ch]	; INLINE ASSEMBLY
@@ -58,7 +59,7 @@ pop ebx
 mov [String.Append.$local.ch], cl
 	jmp String.$loop_while.0_open
 String.$loop_while.0_end :
-mov ecx, [ebx]	; INLINE ASSEMBLY
+mov ecx, [ebx]
 mov ecx, [String.Append.$local.q]	; INLINE ASSEMBLY
 sub ecx, 1	; INLINE ASSEMBLY
 mov byte [ecx], 0x0	; INLINE ASSEMBLY
@@ -85,7 +86,7 @@ mov [String.GetChar.$local.pos], ecx
 push eax
 push ebx
 push edx
-mov ecx, [ebx]	; INLINE ASSEMBLY
+mov ecx, [ebx]
 add ecx, [String.GetChar.$local.pos]	; INLINE ASSEMBLY
 mov cl, [ecx]	; INLINE ASSEMBLY
 and ecx, 0xFF	; INLINE ASSEMBLY
@@ -104,13 +105,13 @@ String.GetChar.returnVal:
 String.SetChar: 
 pop dword [String.SetChar.returnVal]
 pop ecx
-mov [String.SetChar.$local.pos], ecx
-pop ecx
 mov [String.SetChar.$local.ch], cl
+pop ecx
+mov [String.SetChar.$local.pos], ecx
 push eax
 push ebx
 push edx
-mov ecx, [ebx]	; INLINE ASSEMBLY
+mov ecx, [ebx]
 add ecx, [String.SetChar.$local.pos]	; INLINE ASSEMBLY
 mov al, [String.SetChar.$local.ch]	; INLINE ASSEMBLY
 mov byte [ecx], al	; INLINE ASSEMBLY
@@ -146,6 +147,7 @@ push ebx
 mov ebx, ebx
 mov ecx, [String.AppendChar.$local.length]
 push ecx
+xor ecx, ecx
 mov cl, [String.AppendChar.$local.ch]
 push ecx
 call String.SetChar
@@ -159,6 +161,7 @@ mov ecx, [String.AppendChar.$local.length]
 add ecx, edx
 pop edx	; Math end
 push ecx
+xor ecx, ecx
 mov cl, [String.AppendChar.$local.blank]
 push ecx
 call String.SetChar
@@ -231,6 +234,7 @@ mov ecx, [String.$loop_for.0.$local.z]
 imul ecx, edx
 pop edx	; Math end
 push ecx
+xor ecx, ecx
 mov cl, [String.$loop_for.0.$local.ch]
 push ecx
 call String.SetChar
@@ -249,6 +253,7 @@ mov ecx, [String.$loop_for.0.$local.z]
 add ecx, edx
 pop edx	; Math end
 push ecx
+xor ecx, ecx
 mov cl, [String.RawToWhite.$local.white]
 push ecx
 call String.SetChar
@@ -314,6 +319,7 @@ pop ebx
 mov [String.GetLength.$local.ch], cl
 String.$loop_while.1_open :
 push edx
+xor ecx, ecx
 mov cl, [String.GetLength.$local.ch]
 mov edx, ecx
 mov ecx, 0
@@ -344,12 +350,7 @@ pop ebx
 mov [String.GetLength.$local.ch], cl
 	jmp String.$loop_while.1_open
 String.$loop_while.1_end :
-push edx	; Math start
-mov ecx, 1
-mov edx, ecx
 mov ecx, [String.GetLength.$local.ret]
-add ecx, edx
-pop edx	; Math end
 pop edx
 pop ebx
 pop eax

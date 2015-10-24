@@ -3,26 +3,26 @@ classdef String
 		int q = 0
 		char ch = this.GetChar(q)
 		while ch != 0
-			asm("mov ecx, [ebx]")
+			this
 			asm("add ecx, [String.Append.$local.q]")
 			asm("sub ecx, 1")
 			asm("mov dl, [String.Append.$local.ch]")
 			asm("mov [ecx], dl")
 			q = q + 1
 			ch = this.GetChar(q)
-		asm("mov ecx, [ebx]")
+		this
 		asm("mov ecx, [String.Append.$local.q]")
 		asm("sub ecx, 1")
 		asm("mov byte [ecx], 0x0")
 	
 	linked func GetChar (char : int pos)
-		asm("mov ecx, [ebx]")
+		this
 		asm("add ecx, [String.GetChar.$local.pos]")
 		asm("mov cl, [ecx]")
 		asm("and ecx, 0xFF")
 	
 	linked func SetChar (void : int pos, char ch)
-		asm("mov ecx, [ebx]")
+		this
 		asm("add ecx, [String.SetChar.$local.pos]")
 		asm("mov al, [String.SetChar.$local.ch]")
 		asm("mov byte [ecx], al")
@@ -50,6 +50,6 @@ classdef String
 		while ch != 0
 			ret = ret + 1
 			ch = this.GetChar(ret)
-		return ret + 1
+		return ret
 		
 	

@@ -51,7 +51,71 @@ push ecx
 mov ax, 0x0405
 int 0x30
 mov [EchoTest.$loop_if.0.$local.ch], cl
-mov ecx, [EchoTest.$loop_if.0.string_0]
+push edx
+xor ecx, ecx
+mov cl, [EchoTest.$loop_if.0.$local.ch]
+mov edx, ecx
+mov ecx, 0xFE
+cmp edx, ecx
+pop edx
+je EchoTest.$comp_8.true
+mov cl, 0x0
+jmp EchoTest.$comp_8.done
+EchoTest.$comp_8.true :
+mov cl, 0xFF
+EchoTest.$comp_8.done :
+
+cmp cl, 0xFF
+	jne EchoTest.$loop_if.1_close
+mov ax, 0x0103
+int 0x30
+mov ecx, [EchoTest.$global.text]
+push ecx
+mov ax, 0x0100
+int 0x30
+mov ax, 0x0103
+int 0x30
+push ebx
+mov ebx, EchoTest.$global.text
+mov ecx, 0
+push ecx
+xor ecx, ecx
+mov cl, [EchoTest.$global.nul]
+push ecx
+call String.SetChar
+pop ebx
+EchoTest.$loop_if.1_close :
+
+push edx
+xor ecx, ecx
+mov cl, [EchoTest.$loop_if.0.$local.ch]
+mov edx, ecx
+mov ecx, 0xFE
+cmp edx, ecx
+pop edx
+jne EchoTest.$comp_13.true
+mov cl, 0x0
+jmp EchoTest.$comp_13.done
+EchoTest.$comp_13.true :
+mov cl, 0xFF
+EchoTest.$comp_13.done :
+
+cmp cl, 0xFF
+	jne EchoTest.$loop_if.2_close
+push ebx
+mov ebx, EchoTest.$global.text
+xor ecx, ecx
+mov cl, [EchoTest.$loop_if.0.$local.ch]
+push ecx
+call String.AppendChar
+pop ebx
+xor ecx, ecx
+mov cl, [EchoTest.$loop_if.0.$local.ch]
+push ecx
+mov ax, 0x0105
+int 0x30
+EchoTest.$loop_if.2_close :
+
 EchoTest.$loop_if.0_close :
 
 pop edx
@@ -60,10 +124,6 @@ pop eax
 push dword [EchoTest._loop.returnVal]
 ret
 	;Vars:
-EchoTest.$loop_if.0.string_0 :
-	dd EchoTest.$loop_if.0.string_0_data
-EchoTest.$loop_if.0.string_0_data :
-	db "Hello", 0
 EchoTest.$loop_if.0.$local.ch :
 	db 0x0
 EchoTest._loop.returnVal:
@@ -96,6 +156,7 @@ pop ebx
 mov [String.Append.$local.ch], cl
 String.$loop_while.0_open :
 push edx
+xor ecx, ecx
 mov cl, [String.Append.$local.ch]
 mov edx, ecx
 mov ecx, 0
@@ -110,7 +171,7 @@ String.$comp_4.done :
 
 cmp cl, 0xFF
 	jne String.$loop_while.0_end
-mov ecx, [ebx]	; INLINE ASSEMBLY
+mov ecx, [ebx]
 add ecx, [String.Append.$local.q]	; INLINE ASSEMBLY
 sub ecx, 1	; INLINE ASSEMBLY
 mov dl, [String.Append.$local.ch]	; INLINE ASSEMBLY
@@ -131,7 +192,7 @@ pop ebx
 mov [String.Append.$local.ch], cl
 	jmp String.$loop_while.0_open
 String.$loop_while.0_end :
-mov ecx, [ebx]	; INLINE ASSEMBLY
+mov ecx, [ebx]
 mov ecx, [String.Append.$local.q]	; INLINE ASSEMBLY
 sub ecx, 1	; INLINE ASSEMBLY
 mov byte [ecx], 0x0	; INLINE ASSEMBLY
@@ -158,7 +219,7 @@ mov [String.GetChar.$local.pos], ecx
 push eax
 push ebx
 push edx
-mov ecx, [ebx]	; INLINE ASSEMBLY
+mov ecx, [ebx]
 add ecx, [String.GetChar.$local.pos]	; INLINE ASSEMBLY
 mov cl, [ecx]	; INLINE ASSEMBLY
 and ecx, 0xFF	; INLINE ASSEMBLY
@@ -177,13 +238,13 @@ String.GetChar.returnVal:
 String.SetChar: 
 pop dword [String.SetChar.returnVal]
 pop ecx
-mov [String.SetChar.$local.pos], ecx
-pop ecx
 mov [String.SetChar.$local.ch], cl
+pop ecx
+mov [String.SetChar.$local.pos], ecx
 push eax
 push ebx
 push edx
-mov ecx, [ebx]	; INLINE ASSEMBLY
+mov ecx, [ebx]
 add ecx, [String.SetChar.$local.pos]	; INLINE ASSEMBLY
 mov al, [String.SetChar.$local.ch]	; INLINE ASSEMBLY
 mov byte [ecx], al	; INLINE ASSEMBLY
@@ -219,6 +280,7 @@ push ebx
 mov ebx, ebx
 mov ecx, [String.AppendChar.$local.length]
 push ecx
+xor ecx, ecx
 mov cl, [String.AppendChar.$local.ch]
 push ecx
 call String.SetChar
@@ -232,6 +294,7 @@ mov ecx, [String.AppendChar.$local.length]
 add ecx, edx
 pop edx	; Math end
 push ecx
+xor ecx, ecx
 mov cl, [String.AppendChar.$local.blank]
 push ecx
 call String.SetChar
@@ -304,6 +367,7 @@ mov ecx, [String.$loop_for.0.$local.z]
 imul ecx, edx
 pop edx	; Math end
 push ecx
+xor ecx, ecx
 mov cl, [String.$loop_for.0.$local.ch]
 push ecx
 call String.SetChar
@@ -322,6 +386,7 @@ mov ecx, [String.$loop_for.0.$local.z]
 add ecx, edx
 pop edx	; Math end
 push ecx
+xor ecx, ecx
 mov cl, [String.RawToWhite.$local.white]
 push ecx
 call String.SetChar
@@ -387,6 +452,7 @@ pop ebx
 mov [String.GetLength.$local.ch], cl
 String.$loop_while.1_open :
 push edx
+xor ecx, ecx
 mov cl, [String.GetLength.$local.ch]
 mov edx, ecx
 mov ecx, 0
@@ -417,12 +483,7 @@ pop ebx
 mov [String.GetLength.$local.ch], cl
 	jmp String.$loop_while.1_open
 String.$loop_while.1_end :
-push edx	; Math start
-mov ecx, 1
-mov edx, ecx
 mov ecx, [String.GetLength.$local.ret]
-add ecx, edx
-pop edx	; Math end
 pop edx
 pop ebx
 pop eax

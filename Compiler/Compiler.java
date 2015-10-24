@@ -519,6 +519,12 @@ public class Compiler
 			System.out.println("Replace '" + firstWord + "'");
 			programCode += "mov ecx, " + SystemConstant.lookup(firstWord) + "\t; System Constant\n";
 		}
+		else if (firstWord.charAt(0)=='\'')	// should add some handling to escaped chars
+		{
+			String val = inp.substring(0, 3);
+			System.out.println("Replace _" + val + "_");
+			programCode += "mov ecx, " + val + "\t; char\n";
+		}
 		else
 		{
 			boolean forceref = false;
@@ -1172,8 +1178,9 @@ class Function extends Structure
 	{
 		Compiler.programCode += claz.name + "." + name + ": \n";
 		Compiler.programCode += "pop dword [" + Compiler.currentClass.name + "." + name + ".returnVal]\n";
-		for (OVar v : params)
+		for (int w = params.size()-1; w >= 0; w--)
 		{
+			OVar v = params.get(w);
 			String sizeSpec = "dword";
 			if (v.refSize == 1)
 				sizeSpec = "byte";

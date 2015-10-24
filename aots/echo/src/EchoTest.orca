@@ -6,15 +6,18 @@ classdef EchoTest
 		text = sys Program.Ealloc(80)
 		sys Console.Print(":: ")
 	func _loop (void : null)
-		if sys Keyboard.HasEvent()	; MAKES THE OS FREEZE
+		if sys Keyboard.HasEvent()
 			char ch = sys Keyboard.TakeEvent(asm("mov ecx, [console.windowStructLoc]"))
-			text.Append("x")
 			if ch == 0xFE
 				sys Console.Newline()
-				sys Console.PrintHex(@text)
+				sys Console.Print(text)
 				sys Console.Newline()
 				text.SetChar(0, nul)
-			sys Console.PrintChar(ch)
+			if ch != 0xFE
+				text.AppendChar(ch)
+				sys Console.PrintChar(ch)
+				
+
 ; wow Strings are hard...
 ; anyways
 

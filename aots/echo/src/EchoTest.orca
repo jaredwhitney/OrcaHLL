@@ -1,38 +1,21 @@
-import "String"
-classdef EchoTest
-	String text
-	char nul = 0
-	func _init (void : null)
-		text = sys Program.Ealloc(80)
-		sys Console.Print(":: ")
-	func _loop (void : null)
-		if sys Keyboard.HasEvent()
-			char ch = sys Keyboard.TakeEvent(asm("mov ecx, [console.windowStructLoc]"))
-			if ch == 0xFE
-				sys Console.Newline()
-				sys Console.Print(text)
-				sys Console.Newline()
-				text.SetChar(0, nul)
-			if ch != 0xFE
-				text.AppendChar(ch)
-				sys Console.PrintChar(ch)
-				
+import "String"	; import the needed libraries
 
-; wow Strings are hard...
-; anyways
+classdef EchoTest	; declare the program
+	String text	; create a String to keep track of the text
+	char nul = 0	; define the null-seperator (signals the end of a String)
+	
+	func _init (void : null)	; the initialization function
+		text = sys Program.Ealloc(80)	; allocate some zeroed space to store the text in
+		sys Console.PrintLine("Any text you type will be echoed back to you!")	; prompt the user
+		
+	func _loop (void : null)	; the looping function
+		if sys Keyboard.HasEvent()	; has the user pressed a key?
+			char ch = sys Keyboard.TakeEvent(asm_var("console.windowStructLoc"))	; which key did they press?
+			if ch == 0xFE	; did they press enter?
+				sys Console.Newline()	; print a newline
+				sys Console.PrintLine(text)	; print the text followed by a newline
+				text.SetChar(0, nul)	; empty the String
+			if ch != 0xFE	; did they NOT press enter?
+				text.AppendChar(ch)	; add the character they pressed onto the text
+				sys Console.PrintChar(ch)	; print it out so they can see that they pressed it
 
-; Declare Program
-;
-;  Declare a global String (text)
-;
-;  Initiation
-;   Allocate some space for the String
-;   Prompt the user
-;
-;  Loop
-;   Check to see if a key has been pressed
-;   If it has save it in a char
-;   Append it to the global String
-;	Print out the character so the user can see what they're typing
-;   If the char was ENTER
-;   Print out the String

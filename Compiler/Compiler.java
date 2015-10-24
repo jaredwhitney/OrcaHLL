@@ -237,6 +237,22 @@ public class Compiler
 			System.out.println("\t<asm> '" + code + "'");
 			programCode += code + "\t; INLINE ASSEMBLY\n";
 		}
+		else if (funcName.equals("asm_var"))
+		{
+			i++;
+			int e = 0;
+			boolean inQuotes = false;
+			for (char c : inp.toCharArray())
+			{
+				if (c=='\"')
+					inQuotes = !inQuotes;
+				if (!inQuotes && e > i)
+					break;
+				e++;
+			}
+			String code = inp.substring(i+1, e);
+			programCode += "mov ecx, [" + code + "]\n";
+		}
 		else
 		{
 			String[] twds = funcName.split("\\Q.\\E");

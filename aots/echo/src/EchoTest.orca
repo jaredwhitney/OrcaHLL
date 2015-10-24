@@ -3,14 +3,16 @@ import "String"	; import the needed libraries
 classdef EchoTest	; declare the program
 	String text	; create a String to keep track of the text
 	char nul = 0	; define the null-seperator (signals the end of a String)
+	Window console
 	
 	func _init (void : null)	; the initialization function
 		text = sys Program.Ealloc(80)	; allocate some zeroed space to store the text in
 		sys Console.PrintLine("Any text you type will be echoed back to you!")	; prompt the user
+		console = sys Console.GetWindow()	; get the console's window so we can get keypresses from it
 		
 	func _loop (void : null)	; the looping function
-		if sys Keyboard.HasEvent()	; has the user pressed a key?
-			char ch = sys Keyboard.TakeEvent(asm_var("console.windowStructLoc"))	; which key did they press?
+		if sys Keyboard.HasEvent(console)	; has the user pressed a key?
+			char ch = sys Keyboard.TakeEvent(console)	; which key did they press?
 			if ch == 0xFE	; did they press enter?
 				sys Console.Newline()	; print a newline
 				sys Console.PrintLine(text)	; print the text followed by a newline

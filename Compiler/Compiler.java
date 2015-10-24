@@ -984,6 +984,7 @@ class SystemCall
 		callList.put("Console.Newline",		"0x0103");
 		callList.put("Console.Clear",		"0x0104");
 		callList.put("Console.PrintChar",	"0x0105");
+		callList.put("Console.GetWindow",   "0x0106");
 		callList.put("Dolphin.RegisterWindow",		"0x0200");	// unimplemented
 		callList.put("Dolphin.UnregisterWindow",	"0x0201");	// unimplemented
 		callList.put("Dolphin.CreateWindow",		"0x0202");

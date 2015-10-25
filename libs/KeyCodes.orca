@@ -1,0 +1,10 @@
+classdef Key
+	declared char ENTER = 0xFE
+	declared char BACKSPACE = 0xFF
+	declared char KEY_DOWN = 0x50
+	declared char KEY_UP = 0x48
+	declared char KEY_RIGHT = 0x4D
+	declared char KEY_LEFT = 0x4B
+	declared char TAB = 0x3A
+	declared char ESC = 0x01
+	

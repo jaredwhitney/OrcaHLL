@@ -1,0 +1,4 @@
+classdef Char
+	declared char NEWLINE = 0x0A
+	declared char NUL = 0x00
+	

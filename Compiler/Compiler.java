@@ -53,6 +53,8 @@ public class Compiler
 			out.println(closingCode);
 			out.close();
 		}
+		if (FileFinder.needsForceClose)
+			System.exit(0);
 	}
 	public static void handleLine() throws Exception
 	{
@@ -94,58 +96,75 @@ public class Compiler
 		uinp = removeComments(in.nextLine());
 		inp = uinp.trim();
 		System.out.println("first: " + inp);
-		while (getTabCount(uinp) != 0 && !contains(inp, "func"))
+		try
 		{
-			if (!inp.equals(""))
+			while (getTabCount(uinp) != 0 && !contains(inp, "func"))
 			{
-				System.out.println("OVardec: " + inp);
-				//
-				String[] words = inp.split(" ");
-				String name = getSecondRealWord(words);
-				String type = getFirstRealWord(words);
-				String[] mods = getModifiers(words);
-				
-				if (contains(mods, "linked"))
+				if (!inp.equals(""))
 				{
-					System.out.println("Var dec is linked.");
-					OVar v;
-					if (contains(Types.primitive, type))
-						v = new OPrimitive(type, mods, claz.classSize, className + "." + name);
-					else
-						v = new OVar(type, mods, claz.classSize, className + "." + name);
-					claz.linkedOVars.put(name, v);
-					claz.classSize += v.refSize;
-				}
-				else
-				{
-					OVar v;
-					if (contains(Types.primitive, type))
+					System.out.println("OVardec: " + inp);
+					//
+					String[] words = inp.split(" ");
+					String name = getSecondRealWord(words);
+					String type = getFirstRealWord(words);
+					String[] mods = getModifiers(words);
+					
+					if (existsIn(mods, "linked"))
 					{
-						v = new OPrimitive(type, mods, className + ".$global." + name);
+						System.out.println("Var dec is linked.");
+						OVar v;
+						if (existsIn(Types.primitive, type))
+							v = new OPrimitive(type, mods, claz.classSize, className + "." + name);
+						else
+							v = new OVar(type, mods, claz.classSize, className + "." + name);
+						claz.linkedOVars.put(name, v);
+						claz.classSize += v.refSize;
 					}
 					else
-						v = new OVar(type, mods, className + ".$global." + name);
-					claz.vars.put(name, v);
+					{
+						OVar v;
+						if (existsIn(Types.primitive, type))
+						{
+							if (existsIn(mods, "declared"))
+							{
+								System.out.println("Var " + name + " [" + type + "] declared as " + smartSplit(inp, '=')[1].trim());
+								v = new OPrimitive(type, mods, className + ".$global." + name, smartSplit(inp, '=')[1]);
+							}
+							else
+								v = new OPrimitive(type, mods, className + ".$global." + name);
+						}
+						else
+							v = new OVar(type, mods, className + ".$global." + name);
+						claz.vars.put(name, v);
+					}
+					//
 				}
-				//
+				inp = removeComments(in.nextLine()).trim();
 			}
-			inp = removeComments(in.nextLine()).trim();
 		}
-		System.out.println("Check linked processing...");
-		for (Entry<String, OVar> e : claz.linkedOVars.entrySet())
+		catch (NoSuchElementException ex)
 		{
-			OVar v = e.getValue();
-			programCode += v.asmName + " equ " + v.linkedOffset + "\n";
-			System.out.println("Defined a constant");
+			inp = "";	// do not attempt to work with any junk data
 		}
-		programCode += claz.linkedOVars.entrySet().size()>0?"\n":"";
-		for (Entry<String, OVar> e : claz.vars.entrySet())
+		finally
 		{
-			OVar v = e.getValue();
-			declareVar(v);
+			System.out.println("Check linked processing...");
+			for (Entry<String, OVar> e : claz.linkedOVars.entrySet())
+			{
+				OVar v = e.getValue();
+				programCode += v.asmName + " equ " + v.linkedOffset + "\n";
+				System.out.println("Defined a constant");
+			}
+			programCode += claz.linkedOVars.entrySet().size()>0?"\n":"";
+			for (Entry<String, OVar> e : claz.vars.entrySet())
+			{
+				OVar v = e.getValue();
+				declareVar(v);
+			}
+			System.out.println(className + " size:: " + claz.classSize);
 		}
-		System.out.println(className + " size:: " + claz.classSize);
-		handleLine();	// to handle the line that we stopped on
+		if (!inp.equals(""))
+			handleLine();	// to handle the line that we stopped on
 	}
 	public static String getFirstRealWord(String[] words)
 	{
@@ -590,7 +609,6 @@ public class Compiler
 			if (v != null)
 				break;
 		}
-		boolean bToLinked = false;
 		while (!levelStor.isEmpty())
 			level.push(levelStor.pop());
 		
@@ -646,7 +664,7 @@ public class Compiler
 					System.out.println("\tisMainVar: " + s);
 					//currentAdd = "";
 					if (vs instanceof OPrimitive)
-						throw new RuntimeException("... well that happened: " + commonName + " is invalid (" + s + ") is primitive and cannot have subvars)");
+						throw new RuntimeException("... well that happened: " + commonName + " is invalid (" + s + " is primitive and cannot have subvars)");
 					System.out.println("\t\tType: " + vs.type);
 					uLevelType = vs.type;
 					// need to grab the subvar here!
@@ -658,10 +676,8 @@ public class Compiler
 					System.out.println("\tAdd static to path: " + s);
 					currentAdd += s + ".";
 				}
-				if (bToLinked)
-					break;
 			}
-			if (!bToLinked)
+			if (gsubs)
 			{
 				//throw new RuntimeException("Finish");
 				programCode += "pop edx\t; End getting subvar\n";
@@ -669,7 +685,10 @@ public class Compiler
 			}
 		}
 		if (v==null)	// check libraries
+		{
 			v = libvars.get(commonName);
+			System.out.println("FROM LIBVAR:: " + commonName + " :: " + v);
+		}
 		if (v==null && contains(commonName, "."))	// check linked ovars
 		{
 			System.out.println("Check for linked...");
@@ -901,7 +920,7 @@ public class Compiler
 			closingCode += "; *** LIB IMPORT '" + asmLibFile.getName().replaceAll(".asm", "") + "' ***\n" + inp + "\n";
 		}
 	}
-	public static void importLib(String name)
+	public static void importLib(String name) throws Exception
 	{
 		try{
 			name = name.substring(1, name.length()-1);
@@ -927,7 +946,12 @@ public class Compiler
 		{
 			System.out.println("\tFail.");
 		}
-		throw new RuntimeException("Failed to load lib: '" + name + "'");
+		FileFinder finder = new FileFinder("missing library", name + ".varlist");
+		File varfile = new File(finder.lookForFile());
+		File sub = new File(varfile.getAbsolutePath().replaceAll(".varlist", ".asm"));
+		System.out.println("\t\tLoading lib from: '" + sub.getAbsolutePath() + "'");
+		loadSingleLib(varfile);
+		copySingleLib(sub);
 	}
 	
 	static void loadSingleLib(File f) throws Exception
@@ -966,7 +990,7 @@ class Types
 	static String[] primitive = {"int", "int_s", "bool", "byte", "char", "String"};	// String and this are special cases
 	static String[] special = {"null", "void"};
 	static String[] defined = {"Window", "Image", "Buffer", "Pointer", "Color"};
-	static String[] modifier = {"linked", "capped", "final", "invis"};
+	static String[] modifier = {"linked", "capped", "final", "invis", "declared"};
 	static String[] block = {"if", "for", "while"};
 	static String[] comparator = {"!=", "<=", ">=", ">", "<", "==", "seq"};
 	static String[] swappable = {"$LinkedClassSize"};
@@ -1053,6 +1077,8 @@ class OVar implements Serializable
 		this.type = type;
 		this.modifiers = modifiers;
 		this.asmName = asmName;
+		if (!Compiler.existsIn(Types.primitive, type) && Compiler.existsIn(modifiers, "declared"))
+			throw new RuntimeException("Non-primitive types cannot be declared!");
 	}
 	public OVar(String type, String[] modifiers, int linkedOffset, String asmName)
 	{
@@ -1071,10 +1097,10 @@ class OVar implements Serializable
 }
 class OPrimitive extends OVar
 {
-	public OPrimitive(String ltype, String[] modifiers, String asmName)
+	public OPrimitive(String ltype, String[] modifiers, String... asmNameAndTags)
 	{
 		//assert (ltype instanceof String);
-		super((String)ltype, modifiers, asmName);
+		super((String)ltype, modifiers, asmNameAndTags[0]);
 		if (ltype.equals("byte") || ltype.equals("char"))
 			refSize = 1;
 		if (ltype.equals("int_s"))
@@ -1083,6 +1109,16 @@ class OPrimitive extends OVar
 			refSize = 4;
 		if (ltype.equals("this"))
 			asmName = "ebx";
+		if (Compiler.existsIn(modifiers, "declared"))
+			try
+			{
+				ival = asmNameAndTags[1].trim();
+				System.out.println(asmNameAndTags[0] + " [" + ltype + "] delcared as " + ival);
+			}
+			catch (ArrayIndexOutOfBoundsException ex)
+			{
+				System.out.println("Warn: Declared var " + asmNameAndTags[0] + " is missing a declaration. [possibly imported]");
+			}
 	}
 	public OPrimitive(String ltype, String[] modifiers, int linkedOffset, String asmName)
 	{

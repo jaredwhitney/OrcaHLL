@@ -1,8 +1,9 @@
 import "String"	; import the needed libraries
+import "CharCodes"
+import "KeyCodes"
 
 classdef EchoTest	; declare the program
 	String text	; create a String to keep track of the text
-	char nul = 0	; define the null-seperator (signals the end of a String)
 	Window console
 	
 	func _init (void : null)	; the initialization function
@@ -13,11 +14,11 @@ classdef EchoTest	; declare the program
 	func _loop (void : null)	; the looping function
 		if sys Keyboard.HasEvent(console)	; has the user pressed a key?
 			char ch = sys Keyboard.TakeEvent(console)	; which key did they press?
-			if ch == 0xFE	; did they press enter?
+			if ch == KeyCodes.ENTER	; did they press enter?
 				sys Console.Newline()	; print a newline
 				sys Console.PrintLine(text)	; print the text followed by a newline
-				text.SetChar(0, nul)	; empty the String
-			if ch != 0xFE	; did they NOT press enter?
+				text.SetChar(0, CharCodes.NUL)	; empty the String
+			if ch != KeyCodes.ENTER	; did they NOT press enter?
 				text.AppendChar(ch)	; add the character they pressed onto the text
 				sys Console.PrintChar(ch)	; print it out so they can see that they pressed it
 

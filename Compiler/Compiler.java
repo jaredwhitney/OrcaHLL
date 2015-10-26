@@ -391,7 +391,7 @@ public class Compiler
 	public static boolean existsIn(String[] a, String b)
 	{
 		for (String c : a)
-			if (c.equalsIgnoreCase(b))
+			if (c.equals(b))
 				return true;
 		return false;
 	}
@@ -417,6 +417,7 @@ public class Compiler
 		String firstWord = getFirstRealWord(words);
 		if (existsIn(Types.defined, firstWord) || existsIn(Types.primitive, firstWord) || isClassName(firstWord))
 		{
+			System.out.println(existsIn(Types.defined, firstWord) + " : " + existsIn(Types.primitive, firstWord) + " : " + isClassName(firstWord));
 			System.out.println("Kgetvardec " + firstWord);
 			createVar(words, inp);
 		}
@@ -464,6 +465,11 @@ public class Compiler
 			Function.returnedOn = lineNumber;
 			System.out.println("[Return] End handling return.");
 		}
+		else if (isComparison(inp))
+		{
+			System.out.println("[Compare] '" + inp + "'");
+			handleComparison(inp);
+		}
 		else if (existsIn(Types.block, firstWord))
 		{
 			Structure s = null;
@@ -497,11 +503,6 @@ public class Compiler
 			String rest = inp.substring("sys".length(), inp.length());
 			System.out.println("Syscall in '" + rest + "'");
 			parse(rest);
-		}
-		else if (isComparison(inp))
-		{
-			System.out.println("[Compare] '" + inp + "'");
-			handleComparison(inp);
 		}
 		/*else if (words.length > 1 && getSecondRealWord(words).equals("as"))	// There needs to be some better way of doing this...
 		{

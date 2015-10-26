@@ -1,0 +1,58 @@
+import "Window"
+import "String"
+import "KeyCodes"
+import "CharCodes"
+classdef iConsole
+	Window window
+	String command
+	
+	func _init (void : null)
+		window = sys Console.GetWindow()
+		command = sys Program.Ealloc(80)
+		sys Console.Print("Console: ")
+		
+	func _loop (void : null)
+		if sys Keyboard.HasEvent(window)
+			char ch = sys Keyboard.TakeEvent(window)
+			
+			if ch != KeyCodes.ENTER
+				command.AppendChar(ch)
+				sys Console.PrintChar(ch)
+				
+			if ch == KeyCodes.ENTER
+				sys Console.Newline()
+				
+				if command.Equals("help")
+					sys Console.PrintLine("clear: Clears the screen.")
+					sys Console.PrintLine("exit: Exits the console.")
+					sys Console.PrintLine("fullscreen: Toggles fullscreen mode.")
+					sys Console.PrintLine("help: Displays this prompt.")
+					sys Console.PrintLine("lock: Locks the computer.")
+					sys Console.PrintLine("memstat: Prints out the percentage of RAM in use.")
+					sys Console.PrintLine("time: Prints out the current time.")
+					sys Console.PrintLine("tree: Displays all mounted files.")
+					
+				if command.Equals("clear")
+					asm("call console.clearScreen")
+					
+				if command.Equals("exit")
+					sys Program.Exit()
+					
+				if command.Equals("fullscreen")
+					asm("call JASM.console.safeFullscreen")
+				
+				if command.Equals("lock")
+					asm("call Manager.lock")
+				
+				if command.Equals("memstat")
+					asm("call console.memstat")
+					
+				if command.Equals("time")
+					asm("call Time.printToConsole")
+					
+				if command.Equals("tree")
+					asm("call Minnow.ctree")
+				
+				sys Console.Print("Console: ")
+				command.SetChar(0, CharCodes.NUL)
+				

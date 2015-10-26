@@ -53,4 +53,12 @@ classdef String
 			ch = this.GetChar(ret)
 		return ret
 		
-	
+	linked func Equals (byte : String str)
+		int finish = this.GetLength()
+		if finish != str.GetLength()
+			return 0x00
+		for int pos = 0 : pos < finish : pos = pos + 1
+			if this.GetChar(pos) != str.GetChar(pos)
+				return 0x00
+		return 0xFF
+		

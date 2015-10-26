@@ -16,6 +16,7 @@ public class Compiler
 	static PrintWriter out;
 	static Map<String, OVar> libvars = new HashMap<String, OVar>();
 	static String[] libdirs = {".", "../libs", "../libraries"};
+	static int strindexctr;
 	static char[] acceptableNumericChars = {'-', 'x', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F'};
 	
 	public static void main(String[] args) throws Exception
@@ -618,7 +619,12 @@ public class Compiler
 			System.out.println("Handle 'this'");
 			return new OVar(currentClass.name, new String[0], "ebx");
 		}
-		if (contains(commonName, ".") && gvarsubs == 0)
+		if (v==null)	// check libraries
+		{
+			v = libvars.get(commonName);
+			System.out.println("FROM LIBVAR:: " + commonName + " :: " + v);
+		}
+		if (contains(commonName, ".") && gvarsubs == 0 && v==null)
 		{
 			String currentAdd = "";
 			String uLevelType = "";
@@ -684,11 +690,6 @@ public class Compiler
 				programCode += "pop edx\t; End getting subvar\n";
 				return new OVar(uLevelType, new String[0], "eax");
 			}
-		}
-		if (v==null)	// check libraries
-		{
-			v = libvars.get(commonName);
-			System.out.println("FROM LIBVAR:: " + commonName + " :: " + v);
 		}
 		if (v==null && contains(commonName, "."))	// check linked ovars
 		{
@@ -760,7 +761,7 @@ public class Compiler
 		System.out.println("[MakeString] Handed '" + inp + "'");
 		String asmName = level.peek().asmName + ".string_" + level.peek().stringLevel++;
 		String type = "String";
-		String name = inp.trim();
+		String name = inp.trim() + strindexctr++ + "@INVALID:STR_REF";
 		String dat_asmName = asmName + "_data";
 		String dat_type = "byte";
 		String dat_name = dat_asmName + "@INVALID:STR_REF";
@@ -1010,6 +1011,8 @@ class SystemCall
 		callList.put("Console.Clear",		"0x0104");
 		callList.put("Console.PrintChar",	"0x0105");
 		callList.put("Console.GetWindow",   "0x0106");
+		callList.put("Console.SetColor",	"0x0107");	// broken atm
+		callList.put("Console.SetVGAcolor",	"0x0108");	// broken atm
 		callList.put("Dolphin.RegisterWindow",		"0x0200");	// unimplemented
 		callList.put("Dolphin.UnregisterWindow",	"0x0201");	// unimplemented
 		callList.put("Dolphin.CreateWindow",		"0x0202");
@@ -1028,10 +1031,12 @@ class SystemCall
 		callList.put("Mouse.IsButtonPressed",			"0x0602");	// unimplemented
 		callList.put("Mouse.AddButtonpressListener",	"0x0603");	// unimplemented
 		callList.put("Mouse.RemoveButtonpressListener",	"0x0604");	// unimplemented
-		callList.put("Time.GetSecond",	"0x0701");	// unimplemented
-		callList.put("Time.GetMinute",	"0x0702");	// unimplemented
-		callList.put("Time.GetHour",	"0x0703");	// unimplemented
-		callList.put("Time.GetYear",	"0x0704");	// unimplemented
+		callList.put("Time.GetSecond",	"0x0701");
+		callList.put("Time.GetMinute",	"0x0702");
+		callList.put("Time.GetHour",	"0x0703");
+		callList.put("Time.GetYear",	"0x0704");
+		callList.put("Time.GetMonth",	"0x0705");
+		callList.put("Time.GetDay",		"0x0706");
 		callList.put("Minnow.Open",	"0x0801");	// unimplemented
 		inited = true;
 	}

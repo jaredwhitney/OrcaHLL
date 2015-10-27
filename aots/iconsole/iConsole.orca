@@ -4,6 +4,7 @@ import "KeyCodes"
 import "CharCodes"
 classdef iConsole
 	Window window
+	Window win
 	String command
 	
 	func _init (void : null)
@@ -36,7 +37,7 @@ classdef iConsole
 					asm("call console.clearScreen")
 					
 				if command.Equals("exit")
-					sys Program.Exit()
+					sys Dolphin.UnregisterWindow(window)
 					
 				if command.Equals("fullscreen")
 					asm("call JASM.console.safeFullscreen")
@@ -46,6 +47,13 @@ classdef iConsole
 				
 				if command.Equals("memstat")
 					asm("call console.memstat")
+					
+				if command.Equals("test")
+					win = Window.Create("Test Window", Window.TYPE_TEXT)
+					win.winNum = sys Dolphin.RegisterWindow(win)
+				
+				if command.Equals("endtest")
+					sys Dolphin.UnregisterWindow(win)
 					
 				if command.Equals("time")
 					sys Console.SetVGAcolor(0x0B)

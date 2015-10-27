@@ -16,8 +16,20 @@ classdef Window
 	linked int oldBuffer
 	linked byte winNum
 	
-	int TYPE_TEXT = 0;
+	byte TYPE_TEXT = 0
+	byte TYPE_IMAGE = 1
 	
-	func _dummyFunc (void : null)
-		int y = 0
+	func Create (Window : String title, byte type)
+		Window ret = sys Program.Ealloc($LinkedClassSize)
+		ret.title = title
+		ret.type = type
+		int_s wk = 40
+		ret.width = wk
+		ret.height = wk
+		int size = sys System.GetValue(SCREEN_BYTEWIDTH)
+		size = size * sys System.GetValue(SCREEN_HEIGHT)
+		ret.windowBuffer = sys Program.Alloc(size)
+		ret.buffer = sys Program.Ealloc(size)
+		ret.oldBuffer = sys Program.Ealloc(size)
+		return ret
 	

@@ -17,8 +17,9 @@ classdef iConsole
 			char ch = sys Keyboard.TakeEvent(window)
 			
 			if ch != KeyCodes.ENTER
-				command.AppendChar(ch)
-				sys Console.PrintChar(ch)
+				if ch != KeyCodes.KEY_SHIFT
+					command.AppendChar(ch)
+					sys Console.PrintChar(ch)
 				
 			if ch == KeyCodes.ENTER
 				sys Console.Newline()
@@ -40,13 +41,20 @@ classdef iConsole
 					sys Dolphin.UnregisterWindow(window)
 					
 				if command.Equals("fullscreen")
-					asm("call JASM.console.safeFullscreen")
+					window.xPos = 0
+					window.yPos = 8
+					window.width = sys System.GetValue(SCREEN_BYTEWIDTH)
+					window.height = sys System.GetValue(SCREEN_HEIGHT)
 				
 				if command.Equals("lock")
 					asm("call Manager.lock")
 				
 				if command.Equals("memstat")
-					asm("call console.memstat")
+					sys Console.Print("Usage: ")
+					sys Console.PrintHex(sys System.GetValue(RAM_USED))
+					sys Console.Print(" / ")
+					sys Console.PrintHex(sys System.GetValue(RAM_TOTAL))
+					sys Console.Newline()
 					
 				if command.Equals("test")
 					win = Window.Create("Test Window", Window.TYPE_TEXT)
@@ -72,6 +80,14 @@ classdef iConsole
 					
 				if command.Equals("tree")
 					asm("call Minnow.ctree")
+				
+				if command.Equals("OHLL lib")
+					asm("call Library._init")
+					sys Console.PrintLine("RETURN")
+				if command.Equals("OHLL videoinfo")
+					asm("call VideoInfo._init")
+				if command.Equals("OHLL test")
+					asm("call TestProgram._init")
 				
 				sys Console.Print("Console: ")
 				command.SetChar(0, CharCodes.NUL)

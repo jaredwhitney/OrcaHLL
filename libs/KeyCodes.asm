@@ -19,6 +19,8 @@ Key.$global.ENTER :
 	db 0xFE
 Key.$global.KEY_UP :
 	db 0x48
+Key.$global.KEY_SHIFT :
+	db 0x2A
 Key.$global.BACKSPACE :
 	db 0xFF
 Key.$FILE_END :

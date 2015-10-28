@@ -7,4 +7,5 @@ classdef Key
 	declared char KEY_LEFT = 0x4B
 	declared char TAB = 0x3A
 	declared char ESC = 0x01
+	declared char KEY_SHIFT = 0x2A
 	

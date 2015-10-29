@@ -35,7 +35,7 @@ classdef iConsole
 					sys Console.PrintLine("tree: Displays all mounted files.")
 					
 				if command.Equals("clear")
-					asm("call console.clearScreen")
+					sys Console.Clear()
 					
 				if command.Equals("exit")
 					sys Dolphin.UnregisterWindow(window)
@@ -57,11 +57,10 @@ classdef iConsole
 					sys Console.Newline()
 					
 				if command.Equals("test")
-					win = Window.Create("Test Window", Window.TYPE_TEXT)
-					win.winNum = sys Dolphin.RegisterWindow(win)
-				
-				if command.Equals("endtest")
-					sys Dolphin.UnregisterWindow(win)
+					sys Console.PrintHex(window)
+					sys Console.Newline()
+					sys Console.PrintHex(@window)
+					sys Console.Newline()
 					
 				if command.Equals("time")
 					sys Console.SetVGAcolor(0x0B)
@@ -83,7 +82,6 @@ classdef iConsole
 				
 				if command.Equals("OHLL lib")
 					asm("call Library._init")
-					sys Console.PrintLine("RETURN")
 				if command.Equals("OHLL videoinfo")
 					asm("call VideoInfo._init")
 				if command.Equals("OHLL test")

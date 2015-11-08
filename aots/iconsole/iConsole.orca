@@ -31,6 +31,7 @@ classdef iConsole
 					sys Console.PrintLine("help: Displays this prompt.")
 					sys Console.PrintLine("lock: Locks the computer.")
 					sys Console.PrintLine("memstat: Prints out the percentage of RAM in use.")
+					sys Console.PrintLine("restart: Restarts the computer.")
 					sys Console.PrintLine("time: Prints out the current time.")
 					sys Console.PrintLine("tree: Displays all mounted files.")
 					
@@ -79,6 +80,13 @@ classdef iConsole
 					
 				if command.Equals("tree")
 					asm("call Minnow.ctree")
+					
+				if command.Equals("restart")
+					asm("mov eax, SysHaltScreen.RESET")
+					"Restarting the computer."
+					asm("mov ebx, ecx")
+					asm("mov ecx, 5")
+					asm("call SysHaltScreen.show")
 				
 				if command.Equals("OHLL lib")
 					asm("call Library._init")

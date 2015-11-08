@@ -167,6 +167,10 @@ mov ecx, [iConsole.$loop_if.4.string_8]
 push ecx
 mov ax, 0x0101
 int 0x30
+mov ecx, [iConsole.$loop_if.4.string_9]
+push ecx
+mov ax, 0x0101
+int 0x30
 iConsole.$loop_if.4_close :
 
 push ebx
@@ -396,7 +400,11 @@ call String.Equals
 pop ebx
 cmp cl, 0xFF
 	jne iConsole.$loop_if.13_close
-call Library._init	; INLINE ASSEMBLY
+mov eax, SysHaltScreen.RESET	; INLINE ASSEMBLY
+mov ecx, [iConsole.$loop_if.13.string_1]
+mov ebx, ecx	; INLINE ASSEMBLY
+mov ecx, 5	; INLINE ASSEMBLY
+call SysHaltScreen.show	; INLINE ASSEMBLY
 iConsole.$loop_if.13_close :
 
 push ebx
@@ -407,7 +415,7 @@ call String.Equals
 pop ebx
 cmp cl, 0xFF
 	jne iConsole.$loop_if.14_close
-call VideoInfo._init	; INLINE ASSEMBLY
+call Library._init	; INLINE ASSEMBLY
 iConsole.$loop_if.14_close :
 
 push ebx
@@ -418,8 +426,19 @@ call String.Equals
 pop ebx
 cmp cl, 0xFF
 	jne iConsole.$loop_if.15_close
-call TestProgram._init	; INLINE ASSEMBLY
+call VideoInfo._init	; INLINE ASSEMBLY
 iConsole.$loop_if.15_close :
+
+push ebx
+mov ebx, iConsole.$global.command
+mov ecx, [iConsole.$loop_if.16.string_0]
+push ecx
+call String.Equals
+pop ebx
+cmp cl, 0xFF
+	jne iConsole.$loop_if.16_close
+call TestProgram._init	; INLINE ASSEMBLY
+iConsole.$loop_if.16_close :
 
 mov ecx, [iConsole.$loop_if.3.string_0]
 push ecx
@@ -444,102 +463,116 @@ pop eax
 push dword [iConsole._loop.returnVal]
 ret
 	;Vars:
+iConsole.$loop_if.11.string_3 :
+	dd iConsole.$loop_if.11.string_3_data
 iConsole.$loop_if.7.string_0_data :
 	db "fullscreen", 0
-iConsole.$loop_if.8.string_0 :
-	dd iConsole.$loop_if.8.string_0_data
-iConsole.$loop_if.14.string_0 :
-	dd iConsole.$loop_if.14.string_0_data
 iConsole.$loop_if.4.string_2 :
 	dd iConsole.$loop_if.4.string_2_data
-iConsole.$loop_if.11.string_2 :
-	dd iConsole.$loop_if.11.string_2_data
+iConsole.$loop_if.13.string_1_data :
+	db "Restarting the computer.", 0
+iConsole.$loop_if.11.string_1 :
+	dd iConsole.$loop_if.11.string_1_data
 iConsole.$loop_if.11.string_3_data :
 	db " ", 0
+iConsole.$loop_if.4.string_9 :
+	dd iConsole.$loop_if.4.string_9_data
 iConsole.$loop_if.4.string_3 :
 	dd iConsole.$loop_if.4.string_3_data
+iConsole.$loop_if.11.string_0 :
+	dd iConsole.$loop_if.11.string_0_data
 iConsole.$loop_if.4.string_5_data :
 	db "lock: Locks the computer.", 0
 iConsole.$loop_if.4.string_6_data :
 	db "memstat: Prints out the percentage of RAM in use.", 0
-iConsole.$loop_if.10.string_0 :
-	dd iConsole.$loop_if.10.string_0_data
-iConsole.$loop_if.4.string_1_data :
-	db "clear: Clears the screen.", 0
-iConsole.$loop_if.15.string_0_data :
-	db "OHLL test", 0
-iConsole.$loop_if.12.string_0_data :
-	db "tree", 0
-iConsole.$loop_if.13.string_0 :
-	dd iConsole.$loop_if.13.string_0_data
-iConsole.$loop_if.11.string_1 :
-	dd iConsole.$loop_if.11.string_1_data
-iConsole.$loop_if.11.string_2_data :
-	db ":", 0
-iConsole.$loop_if.3.string_0_data :
-	db "Console: ", 0
-iConsole.$loop_if.6.string_0_data :
-	db "exit", 0
-iConsole.$loop_if.10.string_0_data :
-	db "test", 0
 iConsole.$loop_if.4.string_8 :
 	dd iConsole.$loop_if.4.string_8_data
-iConsole.$loop_if.9.string_0 :
-	dd iConsole.$loop_if.9.string_0_data
+iConsole.$loop_if.4.string_1_data :
+	db "clear: Clears the screen.", 0
+iConsole.$loop_if.14.string_0 :
+	dd iConsole.$loop_if.14.string_0_data
+iConsole.$loop_if.15.string_0_data :
+	db "OHLL videoinfo", 0
+iConsole.$loop_if.16.string_0 :
+	dd iConsole.$loop_if.16.string_0_data
+iConsole.$loop_if.12.string_0_data :
+	db "tree", 0
+iConsole.$loop_if.12.string_0 :
+	dd iConsole.$loop_if.12.string_0_data
+iConsole.$loop_if.11.string_2_data :
+	db ":", 0
+iConsole.$loop_if.7.string_0 :
+	dd iConsole.$loop_if.7.string_0_data
+iConsole.$loop_if.9.string_2 :
+	dd iConsole.$loop_if.9.string_2_data
+iConsole.$loop_if.3.string_0_data :
+	db "Console: ", 0
+iConsole.$loop_if.9.string_1 :
+	dd iConsole.$loop_if.9.string_1_data
+iConsole.$loop_if.6.string_0_data :
+	db "exit", 0
+iConsole.$loop_if.16.string_0_data :
+	db "OHLL test", 0
 iConsole.$loop_if.3.string_0 :
 	dd iConsole.$loop_if.3.string_0_data
+iConsole.$loop_if.10.string_0_data :
+	db "test", 0
 iConsole.$loop_if.13.string_0_data :
-	db "OHLL lib", 0
+	db "restart", 0
 iConsole.$loop_if.4.string_0 :
 	dd iConsole.$loop_if.4.string_0_data
+iConsole.$loop_if.11.string_4 :
+	dd iConsole.$loop_if.11.string_4_data
 iConsole.$loop_if.11.string_5_data :
 	db "-", 0
-iConsole.$loop_if.11.string_5 :
-	dd iConsole.$loop_if.11.string_5_data
 iConsole.$loop_if.9.string_0_data :
 	db "memstat", 0
 iConsole.$loop_if.4.string_2_data :
 	db "exit: Exits the console.", 0
+iConsole.$loop_if.13.string_0 :
+	dd iConsole.$loop_if.13.string_0_data
+iConsole.$loop_if.4.string_9_data :
+	db "tree: Displays all mounted files.", 0
 iConsole.$loop_if.4.string_1 :
 	dd iConsole.$loop_if.4.string_1_data
 iConsole.$loop_if.4.string_3_data :
 	db "fullscreen: Toggles fullscreen mode.", 0
 iConsole.$loop_if.4.string_8_data :
-	db "tree: Displays all mounted files.", 0
-iConsole.$loop_if.5.string_0 :
-	dd iConsole.$loop_if.5.string_0_data
-iConsole.$loop_if.7.string_0 :
-	dd iConsole.$loop_if.7.string_0_data
+	db "time: Prints out the current time.", 0
+iConsole.$loop_if.11.string_5 :
+	dd iConsole.$loop_if.11.string_5_data
 iConsole.$loop_if.9.string_1_data :
 	db "Usage: ", 0
 iConsole.$loop_if.4.string_6 :
 	dd iConsole.$loop_if.4.string_6_data
-iConsole.$loop_if.9.string_2 :
-	dd iConsole.$loop_if.9.string_2_data
-iConsole.$loop_if.4.string_7 :
-	dd iConsole.$loop_if.4.string_7_data
+iConsole.$loop_if.6.string_0 :
+	dd iConsole.$loop_if.6.string_0_data
+iConsole.$loop_if.9.string_0 :
+	dd iConsole.$loop_if.9.string_0_data
+iConsole.$loop_if.10.string_0 :
+	dd iConsole.$loop_if.10.string_0_data
 iConsole.$loop_if.11.string_1_data :
 	db ":", 0
-iConsole.$loop_if.11.string_3 :
-	dd iConsole.$loop_if.11.string_3_data
 iConsole.$loop_if.8.string_0_data :
 	db "lock", 0
-iConsole.$loop_if.15.string_0 :
-	dd iConsole.$loop_if.15.string_0_data
+iConsole.$loop_if.8.string_0 :
+	dd iConsole.$loop_if.8.string_0_data
 iConsole.$loop_if.5.string_0_data :
 	db "clear", 0
+iConsole.$loop_if.5.string_0 :
+	dd iConsole.$loop_if.5.string_0_data
+iConsole.$loop_if.13.string_1 :
+	dd iConsole.$loop_if.13.string_1_data
 iConsole.$loop_if.0.$local.ch :
 	db 0x0
 iConsole.$loop_if.4.string_4_data :
 	db "help: Displays this prompt.", 0
 iConsole.$loop_if.4.string_7_data :
-	db "time: Prints out the current time.", 0
-iConsole.$loop_if.11.string_4 :
-	dd iConsole.$loop_if.11.string_4_data
+	db "restart: Restarts the computer.", 0
+iConsole.$loop_if.11.string_2 :
+	dd iConsole.$loop_if.11.string_2_data
 iConsole.$loop_if.4.string_4 :
 	dd iConsole.$loop_if.4.string_4_data
-iConsole.$loop_if.6.string_0 :
-	dd iConsole.$loop_if.6.string_0_data
 iConsole.$loop_if.11.string_4_data :
 	db "-", 0
 iConsole.$loop_if.9.string_2_data :
@@ -548,14 +581,12 @@ iConsole.$loop_if.11.string_0_data :
 	db "time", 0
 iConsole.$loop_if.4.string_0_data :
 	db "help", 0
+iConsole.$loop_if.4.string_7 :
+	dd iConsole.$loop_if.4.string_7_data
 iConsole.$loop_if.14.string_0_data :
-	db "OHLL videoinfo", 0
-iConsole.$loop_if.9.string_1 :
-	dd iConsole.$loop_if.9.string_1_data
-iConsole.$loop_if.11.string_0 :
-	dd iConsole.$loop_if.11.string_0_data
-iConsole.$loop_if.12.string_0 :
-	dd iConsole.$loop_if.12.string_0_data
+	db "OHLL lib", 0
+iConsole.$loop_if.15.string_0 :
+	dd iConsole.$loop_if.15.string_0_data
 iConsole.$loop_if.4.string_5 :
 	dd iConsole.$loop_if.4.string_5_data
 iConsole._loop.returnVal:

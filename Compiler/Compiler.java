@@ -1062,6 +1062,7 @@ class SystemConstant
 		valList.put("CLOCK_TICS", "0x6");
 		valList.put("GRAPHICSCARD_NAME", "0x7");
 		valList.put("PROCESSCOUNT", "0x8");
+		valList.put("DISPLAYMODE", "0x9");
 	}
 	public static String lookup(String commonName)
 	{

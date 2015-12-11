@@ -58,10 +58,7 @@ classdef iConsole
 					sys Console.Newline()
 					
 				if command.Equals("test")
-					sys Console.PrintHex(window)
-					sys Console.Newline()
-					sys Console.PrintHex(@window)
-					sys Console.Newline()
+					sys Console.PrintLine("No test function is implemented at this time.")
 					
 				if command.Equals("time")
 					sys Console.SetVGAcolor(0x0B)
